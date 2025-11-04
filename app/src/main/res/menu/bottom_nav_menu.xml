@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home_placeholder"
+        android:title="Sách" />
+    <item
+        android:id="@+id/nav_podcourse"
+        android:icon="@drawable/ic_headphone_placeholder"
+        android:title="Bài hát" />
+    <item
+        android:id="@+id/nav_explore"
+        android:icon="@drawable/ic_explore_placeholder"
+        android:title="Khám phá" />
+
+    <item
+        android:id="@+id/nav_library"
+        android:icon="@drawable/ic_library_placeholder"
+        android:title="Thư viện" />
+</menu>
