@@ -2,6 +2,8 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.AudioBookforKids" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
+        <item name="android:fontFamily">@font/afacad_flux_regular</item>
+        <item name="fontFamily">@font/afacad_flux_regular</item>
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
