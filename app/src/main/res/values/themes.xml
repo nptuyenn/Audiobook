@@ -7,5 +7,10 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
+    <style name="ShapeAppearanceOverlay.App.CornerSizeCircle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
     <style name="Theme.AudioBookforKids" parent="Base.Theme.AudioBookforKids" />
 </resources>

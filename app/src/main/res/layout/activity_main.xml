@@ -93,17 +93,207 @@
                     android:textSize="18sp" />
             </androidx.cardview.widget.CardView>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_topics"
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:clipToPadding="false"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="8dp"
+                android:scrollbars="none">
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <LinearLayout
+                        android:id="@+id/topic_co_tich"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingEnd="12dp"
+                        android:background="?attr/selectableItemBackgroundBorderless">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:scaleType="centerCrop"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#02769D"
+                            android:src="@drawable/ic_co_tich"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSizeCircle"
+                            android:background="@drawable/topic_circle_background"
+                            android:contentDescription="Cổ tích" />
+
+                        <TextView
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Cổ tích"
+                            android:textColor="#283E50"
+                            android:textSize="12sp"
+                            android:gravity="center"
+                            android:maxLines="2" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/topic_nuoc_ngoai"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingEnd="12dp"
+                        android:background="?attr/selectableItemBackgroundBorderless">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:src="@drawable/ic_nuoc_ngoai"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#f28e9a"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSizeCircle"
+                            android:background="@drawable/topic_circle_background"
+                            android:contentDescription="Nước ngoài" />
+
+                        <TextView
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Nước ngoài"
+                            android:textColor="#283E50"
+                            android:textSize="12sp"
+                            android:gravity="center"
+                            android:maxLines="2" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:id="@+id/topic_ngu_ngon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingEnd="12dp"
+                        android:background="?attr/selectableItemBackgroundBorderless">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:scaleType="centerCrop"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#98633b"
+                            android:src="@drawable/ic_ngu_ngon"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSizeCircle"
+                            android:background="@drawable/topic_circle_background"
+                            android:contentDescription="Ngụ ngôn" />
+
+                        <TextView
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Ngụ ngôn"
+                            android:textColor="#283E50"
+                            android:textSize="12sp"
+                            android:gravity="center"
+                            android:maxLines="2" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/topic_giao_duc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:paddingEnd="12dp"
+                        android:background="?attr/selectableItemBackgroundBorderless">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:scaleType="centerCrop"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#D8B12F"
+                            android:src="@drawable/ic_giao_duc"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSizeCircle"
+                            android:background="@drawable/topic_circle_background"
+                            android:contentDescription="Giáo dục" />
+
+                        <TextView
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Giáo dục"
+                            android:textColor="#283E50"
+                            android:textSize="12sp"
+                            android:gravity="center"
+                            android:maxLines="2" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/topic_phieu_luu"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:background="?attr/selectableItemBackgroundBorderless">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:scaleType="centerCrop"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#005039"
+                            android:src="@drawable/ic_phieu_luu"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSizeCircle"
+                            android:background="@drawable/topic_circle_background"
+                            android:contentDescription="Phiêu lưu" />
+
+                        <TextView
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Phiêu lưu"
+                            android:textColor="#283E50"
+                            android:textSize="12sp"
+                            android:gravity="center"
+                            android:maxLines="2" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </HorizontalScrollView>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="24dp"
+                android:paddingBottom="24dp">
+
+                <TextView
+                    android:id="@+id/txtDangNghe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Đang nghe gần đây "
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="16dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Xem tất cả "
+                    android:textColor="#555555"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/txtDangNghe"
+                    app:layout_constraintBottom_toBottomOf="@+id/txtDangNghe" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_featured"
                 android:layout_width="match_parent"
@@ -113,24 +303,37 @@
                 android:paddingEnd="16dp"
                 android:clipToPadding="false"
                 android:layout_marginTop="16dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Thịnh hành "
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp" />
+                android:paddingTop="24dp"
+                android:paddingBottom="24dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Bấm để nghe "
-                android:textSize="14sp"
-                android:textColor="#555555"
-                android:layout_marginStart="16dp"/>
+                <TextView
+                    android:id="@+id/txtThinhHanh"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Thịnh hành "
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="16dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Xem tất cả "
+                    android:textColor="#555555"
+                    android:textSize="14sp"
+                    android:layout_marginEnd="16dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/txtThinhHanh"
+                    app:layout_constraintBottom_toBottomOf="@+id/txtThinhHanh" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_suggestions"
