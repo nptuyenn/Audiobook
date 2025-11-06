@@ -5,14 +5,18 @@
         android:icon="@drawable/ic_home_placeholder"
         android:title="Sách" />
     <item
-        android:id="@+id/nav_podcourse"
-        android:icon="@drawable/ic_headphone_placeholder"
-        android:title="Bài hát" />
+        android:id="@+id/nav_ai"
+        android:icon="@drawable/ic_ai_placeholder"
+        android:title="AI" />
     <item
-        android:id="@+id/nav_explore"
-        android:icon="@drawable/ic_explore_placeholder"
-        android:title="Khám phá" />
+        android:id="@+id/nav_play_pause"
+        android:icon="@drawable/ic_play_pause_placeholder"
+        android:title="" />
 
+    <item
+        android:id="@+id/nav_new_releases"
+        android:icon="@drawable/ic_new_releases_placeholder"
+        android:title="Mới" />
     <item
         android:id="@+id/nav_library"
         android:icon="@drawable/ic_library_placeholder"
