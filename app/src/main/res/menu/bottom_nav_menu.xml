@@ -8,15 +8,11 @@
         android:id="@+id/nav_ai"
         android:icon="@drawable/ic_ai_placeholder"
         android:title="AI" />
-    <item
-        android:id="@+id/nav_play_pause"
-        android:icon="@drawable/ic_play_pause_placeholder"
-        android:title="" />
 
     <item
-        android:id="@+id/nav_new_releases"
-        android:icon="@drawable/ic_new_releases_placeholder"
-        android:title="Mới" />
+        android:id="@+id/nav_search"
+        android:icon="@drawable/ic_search_placeholder"
+        android:title="Tìm kiếm" />
     <item
         android:id="@+id/nav_library"
         android:icon="@drawable/ic_library_placeholder"
