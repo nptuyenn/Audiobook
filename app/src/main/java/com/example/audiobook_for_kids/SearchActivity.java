@@ -75,4 +75,3 @@ public class SearchActivity extends AppCompatActivity {
         // Cập nhật RecyclerView với kết quả tìm kiếm
     }
 }
-

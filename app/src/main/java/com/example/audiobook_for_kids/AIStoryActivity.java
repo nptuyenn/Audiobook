@@ -90,7 +90,9 @@ public class AIStoryActivity extends AppCompatActivity {
                 finish();
                 return true;
             } else if (itemId == R.id.nav_library) {
-                // TODO: Thêm xử lý cho Thư viện
+                Intent intent = new Intent(AIStoryActivity.this, LibraryActivity.class);
+                startActivity(intent);
+                finish();
                 return true;
             }
 

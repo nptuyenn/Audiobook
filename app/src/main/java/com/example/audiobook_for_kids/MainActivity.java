@@ -91,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.nav_library) {
                 // TODO: Thêm xử lý cho Thư viện
+                Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+                startActivity(intent);
                 return true;
             }
 
