@@ -8,7 +8,7 @@ const router = express.Router();
 // GET /books
 router.get("/", async (req, res, next) => {
   try {
-    const books = await Book.find().select("title author coverUrl category avgRating totalListens");
+    const books = await Book.find().select("title author coverUrl description category avgRating totalListens");
     res.json(books);
   } catch (err) {
     next(err);

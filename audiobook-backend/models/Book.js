@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 
 const bookSchema = new mongoose.Schema({
-  title: String,
-  author: String,
-  coverUrl: String,
+  title: { type: String, required: true },
+  author: { type: String, required: true },
+  coverUrl: { type: String, required: true },
   description: String,
   category: String,
-  avgRating: Number,
-  totalListens: Number,
+  avgRating: { type: Number, default: 0 },        
+  totalListens: { type: Number, default: 0 },     
   createdAt: { type: Date, default: Date.now }
 });
 
