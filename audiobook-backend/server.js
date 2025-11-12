@@ -16,14 +16,15 @@ dotenv.config();
 const app = express();
 
 // Middleware
+app.use
 app.use(cors({
-  origin: "*", // Dev: "*", sau đổi thành frontend URL
+  origin: "*", 
   credentials: true
 }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// --- Routes (PHẢI TRƯỚC 404) ---
+// --- Routes 
 app.use("/auth", authRoutes);
 app.use("/books", bookRoutes);
 app.use("/audio", audioRoutes);
