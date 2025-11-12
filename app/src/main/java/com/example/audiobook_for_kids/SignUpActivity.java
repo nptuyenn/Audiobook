@@ -2,148 +2,112 @@ package com.example.audiobook_for_kids;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.View;
-import android.widget.CheckBox;
+import android.util.Log;
 import android.widget.Toast;
-
+import android.widget.Button;
+import com.google.android.material.textfield.TextInputEditText;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.textfield.TextInputEditText;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class SignUpActivity extends AppCompatActivity {
 
-    private TextInputEditText etFullName;
-    private TextInputEditText etEmail;
-    private TextInputEditText etPassword;
-    private TextInputEditText etConfirmPassword;
-    private CheckBox cbTerms;
+    private TextInputEditText etFullName, etEmail, etPassword, etConfirmPassword;
+    private Button btnSignUp;
+    private static final String TAG = "SignUpActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        // Initialize views
         etFullName = findViewById(R.id.et_full_name);
         etEmail = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
         etConfirmPassword = findViewById(R.id.et_confirm_password);
-        cbTerms = findViewById(R.id.cb_terms);
+        btnSignUp = findViewById(R.id.btn_signup);
 
-        // Sign up button click
-        findViewById(R.id.btn_signup).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                handleSignUp();
-            }
-        });
-
-        // Google sign up button click
-        findViewById(R.id.btn_google_signup).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                handleGoogleSignUp();
-            }
-        });
-
-        // Login text click
-        findViewById(R.id.tv_login).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Navigate back to login
-                Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-
-        // Terms text click
-        findViewById(R.id.tv_terms_text).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cbTerms.setChecked(!cbTerms.isChecked());
-            }
-        });
+        btnSignUp.setOnClickListener(v -> handleSignUp());
     }
 
     private void handleSignUp() {
-        String fullName = etFullName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-        String confirmPassword = etConfirmPassword.getText().toString().trim();
+        String name = etFullName.getText() != null ? etFullName.getText().toString().trim() : "";
+        String email = etEmail.getText() != null ? etEmail.getText().toString().trim() : "";
+        String password = etPassword.getText() != null ? etPassword.getText().toString().trim() : "";
+        String confirm = etConfirmPassword.getText() != null ? etConfirmPassword.getText().toString().trim() : "";
 
-        // Validate full name
-        if (TextUtils.isEmpty(fullName)) {
-            etFullName.setError("Vui lòng nhập họ và tên");
-            etFullName.requestFocus();
+        if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (fullName.length() < 2) {
-            etFullName.setError("Họ và tên quá ngắn");
-            etFullName.requestFocus();
+        if (!password.equals(confirm)) {
+            Toast.makeText(this, "Mật khẩu xác nhận không khớp", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Validate email
-        if (TextUtils.isEmpty(email)) {
-            etEmail.setError("Vui lòng nhập email");
-            etEmail.requestFocus();
-            return;
-        }
+        Log.d(TAG, "Sending signup request: name=" + name + ", email=" + email + ", password=" + password);
 
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Email không hợp lệ");
-            etEmail.requestFocus();
-            return;
-        }
+        new Thread(() -> {
+            try {
+                URL url = new URL("http://10.0.2.2:5000/auth/signup");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                conn.setDoOutput(true);
 
-        // Validate password
-        if (TextUtils.isEmpty(password)) {
-            etPassword.setError("Vui lòng nhập mật khẩu");
-            etPassword.requestFocus();
-            return;
-        }
+                JSONObject json = new JSONObject();
+                json.put("name", name);
+                json.put("email", email);
+                json.put("password", password);
 
-        if (password.length() < 6) {
-            etPassword.setError("Mật khẩu phải có ít nhất 6 ký tự");
-            etPassword.requestFocus();
-            return;
-        }
+                // Ghi dữ liệu JSON vào output stream
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = json.toString().getBytes("utf-8");
+                    os.write(input, 0, input.length);
+                    os.flush();
+                }
 
-        // Validate confirm password
-        if (TextUtils.isEmpty(confirmPassword)) {
-            etConfirmPassword.setError("Vui lòng xác nhận mật khẩu");
-            etConfirmPassword.requestFocus();
-            return;
-        }
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "Response code: " + responseCode);
 
-        if (!password.equals(confirmPassword)) {
-            etConfirmPassword.setError("Mật khẩu không khớp");
-            etConfirmPassword.requestFocus();
-            return;
-        }
+                InputStream is = (responseCode >= 200 && responseCode < 300)
+                        ? conn.getInputStream() : conn.getErrorStream();
 
-        // Validate terms checkbox
-        if (!cbTerms.isChecked()) {
-            Toast.makeText(this, "Vui lòng đồng ý với điều khoản dịch vụ", Toast.LENGTH_SHORT).show();
-            return;
-        }
+                BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    response.append(line.trim());
+                }
+                br.close();
 
-        // TODO: Implement actual sign up logic with Firebase or your backend
-        // For now, just show success and navigate to MainActivity
-        Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+                String serverResponse = response.toString();
+                Log.d(TAG, "Server response: " + serverResponse);
 
-        Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Phản hồi: " + serverResponse, Toast.LENGTH_LONG).show();
+                    // Nếu thành công, chuyển sang VerifyOtpActivity
+                    if (responseCode == 200 || responseCode == 201) {
+                        Intent intent = new Intent(this, VerifyOtpActivity.class);
+                        intent.putExtra("email", email);
+                        startActivity(intent);
+                    }
+                });
 
-    private void handleGoogleSignUp() {
-        // TODO: Implement Google Sign-Up
-        Toast.makeText(this, "Đăng ký với Google đang được phát triển", Toast.LENGTH_SHORT).show();
+                conn.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Lỗi: " + e.toString(), Toast.LENGTH_LONG).show());
+            }
+        }).start();
     }
 }
-
