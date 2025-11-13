@@ -1,6 +1,7 @@
 package com.example.audiobook_for_kids;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,9 +38,15 @@ public class AudiobookAdapter extends RecyclerView.Adapter<AudiobookAdapter.View
         // Gán hình ảnh cho ImageView
         holder.coverImageView.setImageResource(coverResId);
 
-        // (Bạn có thể thêm OnClickListener ở đây)
+        // Xử lý khi bé nhấn vào một cuốn truyện
         holder.itemView.setOnClickListener(v -> {
-            // Xử lý khi bé nhấn vào một cuốn truyện
+            // Mở trang chi tiết audiobook
+            Intent intent = new Intent(context, AudiobookDetailActivity.class);
+            // TODO: Truyền dữ liệu chi tiết khi có backend
+            // intent.putExtra("BOOK_ID", bookId);
+            // intent.putExtra("BOOK_TITLE", title);
+            intent.putExtra("COVER_RES_ID", coverResId);
+            context.startActivity(intent);
         });
     }
 
