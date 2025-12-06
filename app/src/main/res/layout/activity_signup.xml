@@ -1,69 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFBF3"
-    android:fillViewport="true">
+    android:background="@drawable/background_sign_up"
+    android:padding="24dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
+    <!-- Divider with "Hoặc" -->
+    <LinearLayout
+        android:id="@+id/signup_container"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:layout_marginTop="80dp"
+        android:background="@drawable/white_border"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Logo -->
-        <ImageView
-            android:id="@+id/iv_logo"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="40dp"
-            android:src="@drawable/logo_no_word"
-            android:contentDescription="Logo KidoBook"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- App Name -->
         <TextView
             android:id="@+id/tv_app_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
             android:text="Tạo tài khoản"
-            android:textSize="28sp"
-            android:textStyle="bold"
             android:textColor="#283E50"
-            app:layout_constraintTop_toBottomOf="@id/iv_logo"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:textSize="40sp"
+            android:textStyle="bold" />
 
-        <!-- Welcome Text -->
-        <TextView
-            android:id="@+id/tv_welcome"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Hãy bắt đầu lắng nghe những câu chuyện tuyệt vời nào"
-            android:textSize="16sp"
-            android:textColor="#757575"
-            app:layout_constraintTop_toBottomOf="@id/tv_app_name"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Full Name Input Container -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_full_name"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
             android:hint="Họ và tên"
-            app:startIconDrawable="@android:drawable/ic_menu_myplaces"
-            app:startIconTint="#757575"
+            app:boxBackgroundMode="none"
             app:hintTextColor="#FF6B6B"
-            app:layout_constraintTop_toBottomOf="@id/tv_welcome"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:startIconDrawable="@android:drawable/ic_menu_myplaces"
+            app:startIconTint="#757575">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_full_name"
@@ -79,23 +56,14 @@
         <!-- Email Input Container -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_email"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:hint="Email"
-            app:boxBackgroundMode="outline"
-            app:boxBackgroundColor="#FFFFFF"
-            app:boxStrokeColor="#FF6B6B"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:startIconDrawable="@android:drawable/ic_dialog_email"
-            app:startIconTint="#757575"
+            app:boxBackgroundMode="none"
             app:hintTextColor="#FF6B6B"
-            app:layout_constraintTop_toBottomOf="@id/til_full_name"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:startIconDrawable="@android:drawable/ic_dialog_email"
+            app:startIconTint="#757575">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_email"
@@ -111,27 +79,18 @@
         <!-- Password Input Container -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_password"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:hint="Mật khẩu"
-            app:boxBackgroundMode="outline"
-            app:boxBackgroundColor="#FFFFFF"
-            app:boxStrokeColor="#FF6B6B"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:startIconDrawable="@android:drawable/ic_lock_lock"
-            app:startIconTint="#757575"
+            app:boxBackgroundMode="none"
             app:endIconMode="password_toggle"
             app:endIconTint="#757575"
-            app:hintTextColor="#FF6B6B"
             app:helperText="Tối thiểu 6 ký tự"
             app:helperTextTextColor="#757575"
-            app:layout_constraintTop_toBottomOf="@id/til_email"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:hintTextColor="#FF6B6B"
+            app:startIconDrawable="@android:drawable/ic_lock_lock"
+            app:startIconTint="#757575">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_password"
@@ -141,38 +100,28 @@
                 android:inputType="textPassword"
                 android:textColor="#283E50"
                 android:textSize="16sp" />
-
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Confirm Password Input Container -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_confirm_password"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:hint="Xác nhận mật khẩu"
-            app:boxBackgroundMode="outline"
-            app:boxBackgroundColor="#FFFFFF"
-            app:boxStrokeColor="#FF6B6B"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:startIconDrawable="@android:drawable/ic_lock_lock"
-            app:startIconTint="#757575"
+            app:boxBackgroundMode="none"
             app:endIconMode="password_toggle"
             app:endIconTint="#757575"
             app:hintTextColor="#FF6B6B"
-            app:layout_constraintTop_toBottomOf="@id/til_password"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:startIconDrawable="@android:drawable/ic_lock_lock"
+            app:startIconTint="#757575">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_confirm_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPassword"
                 android:background="@drawable/login_box_border"
+                android:inputType="textPassword"
                 android:textColor="#283E50"
                 android:textSize="16sp" />
 
@@ -181,140 +130,134 @@
         <!-- Terms and Conditions -->
         <LinearLayout
             android:id="@+id/terms_layout"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:orientation="horizontal"
             android:gravity="center_vertical"
-            app:layout_constraintTop_toBottomOf="@id/til_confirm_password"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:orientation="horizontal">
 
             <CheckBox
                 android:id="@+id/cb_terms"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:buttonTint="#FF6B6B" />
+                app:buttonTint="#8DB755" />
+            />
 
             <TextView
                 android:id="@+id/tv_terms_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật"
-                android:textSize="14sp"
-                android:textColor="#757575"
                 android:paddingStart="4dp"
-                android:paddingEnd="0dp" />
+                android:paddingEnd="0dp"
+                android:text="Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật"
+                android:textColor="#757575"
+                android:textSize="14sp" />
 
         </LinearLayout>
 
-        <!-- Sign Up Button -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_signup"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="24dp"
-            android:text="Đăng ký"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/white"
+            android:layout_marginTop="16dp"
             android:background="@drawable/button_primary"
             android:elevation="4dp"
-            app:layout_constraintTop_toBottomOf="@id/terms_layout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:text="Đăng ký"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-        <!-- Divider with "Hoặc" -->
-        <LinearLayout
-            android:id="@+id/divider_layout"
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/divider_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toBottomOf="@id/signup_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <View
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            app:layout_constraintTop_toBottomOf="@id/btn_signup"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:background="#CCCCCC" />
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"
-                android:background="#CCCCCC" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:text="Hoặc"
-                android:textSize="14sp"
-                android:textColor="#757575" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1"
-                android:background="#CCCCCC" />
-
-        </LinearLayout>
-
-        <!-- Google Sign Up Button -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_google_signup"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="24dp"
-            android:text="Đăng ký với Google"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#283E50"
-            android:background="@drawable/button_google"
-            android:drawableStart="@android:drawable/ic_dialog_info"
-            android:drawablePadding="12dp"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:gravity="center"
-            android:elevation="2dp"
-            app:layout_constraintTop_toBottomOf="@id/divider_layout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Login Text -->
-        <LinearLayout
-            android:id="@+id/login_layout"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
-            android:orientation="horizontal"
-            android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@id/btn_google_signup"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="Hoặc"
+            android:textSize="14sp"
+            android:textColor="#757575" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Đã có tài khoản? "
-                android:textSize="14sp"
-                android:textColor="#757575" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:background="#CCCCCC" />
 
-            <TextView
-                android:id="@+id/tv_login"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Đăng nhập ngay"
-                android:textSize="14sp"
-                android:textColor="#FF6B6B"
-                android:textStyle="bold"
-                android:background="?attr/selectableItemBackground"
-                android:padding="8dp" />
+    </LinearLayout>
 
-        </LinearLayout>
+        <!-- Google Sign Up Button -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_google_signup"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="24dp"
+        android:text="Đăng ký với Google"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#283E50"
+        android:background="@drawable/button_google"
+        android:drawableStart="@android:drawable/ic_dialog_info"
+        android:drawablePadding="12dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:gravity="center"
+        android:elevation="2dp"
+        app:layout_constraintTop_toBottomOf="@id/divider_layout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Login Text -->
+    <LinearLayout
+        android:id="@+id/login_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/btn_google_signup"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
-</ScrollView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đã có tài khoản? "
+            android:textSize="14sp"
+            android:textColor="#757575" />
+
+        <TextView
+            android:id="@+id/tv_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đăng nhập ngay"
+            android:textSize="14sp"
+            android:textColor="#FF6B6B"
+            android:textStyle="bold"
+            android:background="?attr/selectableItemBackground"
+            android:padding="8dp" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
