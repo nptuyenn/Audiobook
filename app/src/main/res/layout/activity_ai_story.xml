@@ -101,7 +101,7 @@
                 app:cardElevation="2dp"
                 app:strokeColor="#D2E1AA"
                 app:strokeWidth="2dp"
-                android:layout_marginBottom="16dp">
+                android:layout_margin="16dp">
 
                 <EditText
                     android:id="@+id/et_prompt"
@@ -123,16 +123,15 @@
             <!-- Nút tạo truyện -->
             <Button
                 android:id="@+id/btn_generate"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_gravity="center"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
                 android:text="Tạo Truyện"
-                android:textSize="16sp"
-                android:textStyle="bold"
+                android:textSize="18sp"
                 app:backgroundTint="@null"
-                android:textColor="#283E50"
+                android:textColor="@color/white"
                 android:background="@drawable/button_primary"
-                android:layout_marginBottom="16dp" />
+                android:layout_margin="16dp" />
 
             <!-- Progress bar -->
             <ProgressBar
