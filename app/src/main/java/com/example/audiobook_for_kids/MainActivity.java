@@ -3,6 +3,8 @@ package com.example.audiobook_for_kids;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.content.Intent;
+import android.widget.Button;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,6 +32,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Xử lý Bottom Navigation
         setupBottomNavigation();
+
+        Button btn_login = findViewById(R.id.btn_login);
+        btn_login.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override
@@ -77,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
 
             if (itemId == R.id.nav_search) {
-                // Mở SearchActivity khi nhấn vào Tìm kiếm
                 Intent intent = new Intent(MainActivity.this, SearchActivity.class);
                 startActivity(intent);
                 return true;
@@ -85,12 +92,10 @@ public class MainActivity extends AppCompatActivity {
                 // Đã ở trang chủ
                 return true;
             } else if (itemId == R.id.nav_ai) {
-                // Mở AIStoryActivity khi nhấn vào AI
                 Intent intent = new Intent(MainActivity.this, AIStoryActivity.class);
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_library) {
-                // TODO: Thêm xử lý cho Thư viện
                 Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
                 startActivity(intent);
                 return true;

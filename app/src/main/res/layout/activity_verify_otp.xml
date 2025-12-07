@@ -38,7 +38,7 @@
             android:text="Nhập mã OTP đã được gửi tới email của bạn"
             android:textColor="#757575"
             android:textSize="16sp"
- />
+            />
 
         <EditText
             android:id="@+id/et_otp"
