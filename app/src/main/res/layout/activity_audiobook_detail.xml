@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="Chi tiết truyện"
-                android:textSize="18sp"
+                android:textSize="24sp"
                 android:textColor="#333333"
                 android:textStyle="bold" />
 

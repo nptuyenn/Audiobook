@@ -43,7 +43,7 @@ public class SplashActivity extends AppCompatActivity {
 
         // Navigate to login activity after splash duration
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
+            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
         }, SPLASH_DURATION);
