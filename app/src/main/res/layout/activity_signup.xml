@@ -39,7 +39,7 @@
             android:hint="Họ và tên"
             app:boxBackgroundMode="none"
             app:hintTextColor="#FF6B6B"
-            app:startIconDrawable="@android:drawable/ic_menu_myplaces"
+            app:startIconDrawable="@drawable/baseline_person_24"
             app:startIconTint="#757575">
 
             <com.google.android.material.textfield.TextInputEditText

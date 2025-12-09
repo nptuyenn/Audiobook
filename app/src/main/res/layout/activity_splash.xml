@@ -30,8 +30,7 @@
             android:layout_height="150dp"
             android:src="@drawable/logo_no_word"
             android:contentDescription="KidoBook Logo"
-            android:scaleType="centerCrop"
-            android:background="@drawable/logo_circle_background" />
+            android:scaleType="centerCrop" />
 
         <!-- App Name -->
         <TextView
