@@ -94,6 +94,11 @@ public class AIStoryActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
                 return true;
+            } else if (itemId == R.id.nav_account) {
+                Intent intent = new Intent(AIStoryActivity.this, AccountActivity.class);
+                startActivity(intent);
+                finish();
+                return true;
             }
 
             return false;

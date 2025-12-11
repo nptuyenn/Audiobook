@@ -7,6 +7,21 @@
     android:background="@drawable/background"
     android:padding="24dp">
 
+    <!-- Back Button -->
+
+    <ImageButton
+        android:id="@+id/btn_back"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/btn_close_selector"
+        android:contentDescription="Quay về trang chủ"
+        android:padding="12dp"
+        android:scaleType="center"
+        android:src="@drawable/ic_arrow_back_yellow"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/input_container"
         android:layout_width="0dp"

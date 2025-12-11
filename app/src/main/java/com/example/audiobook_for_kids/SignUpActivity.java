@@ -38,6 +38,14 @@ public class SignUpActivity extends AppCompatActivity {
         findViewById(R.id.tv_login).setOnClickListener(v -> {
             startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
         });
+        // Xử lý nút quay lại - về trang chủ với hiệu ứng slide down
+        findViewById(R.id.btn_back).setOnClickListener(v -> {
+            Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_up_enter, R.anim.slide_down_exit);
+            finish();
+        });
     }
 
     private void handleSignUp() {

@@ -30,6 +30,15 @@ public class LoginActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
 
+        // Xử lý nút quay lại - về trang chủ với hiệu ứng slide down
+        findViewById(R.id.btn_back).setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_up_enter, R.anim.slide_down_exit);
+            finish();
+        });
+
         findViewById(R.id.btn_login).setOnClickListener(v -> handleLogin());
         findViewById(R.id.tv_register).setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, SignUpActivity.class));
@@ -69,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
                 URL url = new URL("http://10.0.2.2:5000/auth/signin");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
-                conn.setDoOutput(true); // ✅ ĐẶT TRƯỚC headers
+                conn.setDoOutput(true); // ĐẶT TRƯỚC headers
                 conn.setRequestProperty("Content-Type", "application/json"); // ✅ Bỏ charset
                 conn.setRequestProperty("Accept", "application/json");
                 conn.setConnectTimeout(15000);
@@ -80,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
                 json.put("email", email);
                 json.put("password", password);
 
-                // ✅ Log để debug
+                //  Log để debug
                 System.out.println("=== LOGIN REQUEST ===");
                 System.out.println("URL: " + url);
                 System.out.println("JSON: " + json.toString());
@@ -89,7 +98,7 @@ public class LoginActivity extends AppCompatActivity {
                 try (OutputStream os = conn.getOutputStream()) {
                     byte[] input = json.toString().getBytes("utf-8");
                     os.write(input, 0, input.length);
-                    os.flush(); // ✅ THÊM flush
+                    os.flush(); //  THÊM flush
                 }
 
                 // Đọc response
@@ -116,7 +125,7 @@ public class LoginActivity extends AppCompatActivity {
                     try {
                         JSONObject respJson = new JSONObject(serverResponse);
                         if (responseCode == 200) {
-                            // ✅ Lưu token nếu cần
+                            //  Lưu token nếu cần
                             String accessToken = respJson.optString("accessToken", "");
                             String refreshToken = respJson.optString("refreshToken", "");
 

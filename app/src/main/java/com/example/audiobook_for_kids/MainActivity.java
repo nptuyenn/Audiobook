@@ -99,6 +99,10 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
                 startActivity(intent);
                 return true;
+            } else if (itemId == R.id.nav_account) {
+                Intent intent = new Intent(MainActivity.this, AccountActivity.class);
+                startActivity(intent);
+                return true;
             }
 
             return false;
