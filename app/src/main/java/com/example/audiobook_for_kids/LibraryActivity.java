@@ -99,6 +99,11 @@ public class LibraryActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_library) {
                 // Đã ở trang Thư viện
                 return true;
+            } else if (itemId == R.id.nav_account) {
+                Intent intent = new Intent(LibraryActivity.this, AccountActivity.class);
+                startActivity(intent);
+                finish();
+                return true;
             }
 
             return false;

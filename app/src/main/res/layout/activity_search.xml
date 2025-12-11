@@ -23,7 +23,7 @@
             android:id="@+id/iv_back"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_back"
+            android:src="@drawable/ic_arrow_back"
             android:contentDescription="Quay lại"
             android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintStart_toStartOf="parent"
