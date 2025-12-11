@@ -10,7 +10,14 @@ public class Book {
     private String category;
 
     // Constructor, getter, setter
-    public Book() {}
+    public Book(String _id, String title, String author, String coverUrl, String description, String category) {
+        this._id = _id;
+        this.title = title;
+        this.author = author;
+        this.coverUrl = coverUrl;
+        this.description = description;
+        this.category = category;
+    }
 
     public String getId() { return _id; }
     public String getTitle() { return title; }

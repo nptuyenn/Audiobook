@@ -11,7 +11,6 @@
         android:orientation="vertical"
         android:padding="0dp">
 
-        <!-- Header với nút quay lại -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -52,7 +51,6 @@
 
         </RelativeLayout>
 
-        <!-- Ảnh bìa truyện -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="200dp"
             android:layout_height="280dp"
@@ -71,7 +69,6 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Tiêu đề truyện -->
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="match_parent"
@@ -86,7 +83,6 @@
             android:gravity="center"
             android:fontFamily="sans-serif-medium" />
 
-        <!-- Tác giả -->
         <TextView
             android:id="@+id/tv_author"
             android:layout_width="match_parent"
@@ -99,7 +95,6 @@
             android:textColor="#666666"
             android:gravity="center" />
 
-        <!-- Thông tin (thời lượng, độ tuổi, v.v.) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -133,29 +128,7 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_explore_placeholder"
-                    android:contentDescription="Độ tuổi" />
-
-                <TextView
-                    android:id="@+id/tv_age"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="3-6 tuổi"
-                    android:textSize="12sp"
-                    android:textColor="#666666" />
-
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -183,7 +156,6 @@
 
         </LinearLayout>
 
-        <!-- Nút phát -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_play"
             android:layout_width="match_parent"
@@ -199,7 +171,6 @@
             app:cornerRadius="28dp"
             app:elevation="4dp" />
 
-        <!-- Mô tả truyện -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -224,7 +195,6 @@
             android:textColor="#666666"
             android:lineSpacingExtra="4dp" />
 
-        <!-- Danh sách tập (nếu có) -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
