@@ -1,77 +1,72 @@
 package com.example.audiobook_for_kids;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class SearchActivity extends AppCompatActivity {
 
+    private static final String TAG = "SearchActivity";
+
     private EditText etSearch;
     private ImageView ivBack;
     private ImageView ivClearSearch;
     private RecyclerView rvSearchResults;
+    private TextView searchSuggest;
+    private TextView recentSearch;
+
+    // Topic CardViews
+    private View cardTopic1, cardTopic2, cardTopic3, cardTopic4, cardTopic5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        // Ánh xạ views
-        etSearch = findViewById(R.id.et_search);
-        ivBack = findViewById(R.id.iv_back);
-        ivClearSearch = findViewById(R.id.iv_clear_search);
-        rvSearchResults = findViewById(R.id.rv_search_results);
 
-        // Thiết lập RecyclerView
-        setupRecyclerView();
+        try {
+            setupTopicClickListeners();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        // Xử lý nút quay lại
-        ivBack.setOnClickListener(v -> finish());
+       }
+    private void setupTopicClickListeners() {
+        findViewById(R.id.card_cotich).setOnClickListener(v ->
+                openTopicActivity(TopicActivity.TOPIC_CO_TICH, "Cổ tích"));
 
-        // Xử lý nút xóa text tìm kiếm
-        ivClearSearch.setOnClickListener(v -> etSearch.setText(""));
+        findViewById(R.id.card_nuoc_ngoai).setOnClickListener(v ->
+                openTopicActivity(TopicActivity.TOPIC_NUOC_NGOAI, "Nước ngoài"));
 
-        // Xử lý tìm kiếm khi nhập text
-        etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+        findViewById(R.id.card_ngu_ngon).setOnClickListener(v ->
+                openTopicActivity(TopicActivity.TOPIC_NGU_NGON, "Ngụ ngôn"));
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Hiển thị/ẩn nút xóa
-                ivClearSearch.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
+        findViewById(R.id.card_giao_duc).setOnClickListener(v ->
+                openTopicActivity(TopicActivity.TOPIC_GIAO_DUC, "Giáo dục"));
 
-                // TODO: Thực hiện tìm kiếm
-                performSearch(s.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-
-        // Focus vào ô tìm kiếm khi mở activity
-        etSearch.requestFocus();
+        findViewById(R.id.card_phieu_luu).setOnClickListener(v ->
+                openTopicActivity(TopicActivity.TOPIC_PHIEU_LUU, "Phiêu lưu"));
     }
 
-    private void setupRecyclerView() {
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
-        rvSearchResults.setLayoutManager(layoutManager);
-
-        // TODO: Thiết lập adapter khi có dữ liệu
-        // SearchAdapter adapter = new SearchAdapter(this, searchResults);
-        // rvSearchResults.setAdapter(adapter);
+    private void openTopicActivity(String topicType, String topicTitle) {
+        try {
+            Intent intent = new Intent(this, TopicActivity.class);
+            intent.putExtra(TopicActivity.EXTRA_TOPIC_TYPE, topicType);
+            intent.putExtra(TopicActivity.EXTRA_TOPIC_TITLE, topicTitle);
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void performSearch(String query) {
-        // TODO: Thực hiện tìm kiếm với query
-        // Cập nhật RecyclerView với kết quả tìm kiếm
-    }
+
 }

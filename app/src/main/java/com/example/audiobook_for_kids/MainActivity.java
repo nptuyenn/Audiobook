@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.content.Intent;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,6 +39,12 @@ public class MainActivity extends AppCompatActivity {
         Button btn_login = findViewById(R.id.btn_login);
         btn_login.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+        });
+
+        LinearLayout search_bar = findViewById(R.id.search_bar);
+        search_bar.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SearchActivity.class);
             startActivity(intent);
         });
     }
