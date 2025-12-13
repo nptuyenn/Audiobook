@@ -18,7 +18,7 @@
         android:contentDescription="Quay về trang chủ"
         android:padding="12dp"
         android:scaleType="center"
-        android:src="@drawable/ic_arrow_back_yellow"
+        android:src="@drawable/ic_close"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -170,7 +170,7 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:textColor="#283E50"
-        android:background="@drawable/button_google"
+        android:background="@drawable/white_border"
         android:drawableStart="@android:drawable/ic_dialog_info"
         android:drawablePadding="12dp"
         android:paddingStart="24dp"
