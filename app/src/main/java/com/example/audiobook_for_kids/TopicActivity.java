@@ -61,41 +61,83 @@ public class TopicActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_topic);
 
         try {
+            Log.d(TAG, "onCreate: Setting content view");
+            setContentView(R.layout.activity_topic);
+
+            Log.d(TAG, "onCreate: Getting intent extras");
             currentTopicType = getIntent().getStringExtra(EXTRA_TOPIC_TYPE);
             String topicTitle = getIntent().getStringExtra(EXTRA_TOPIC_TITLE);
 
+            Log.d(TAG, "onCreate: topicType=" + currentTopicType + ", title=" + topicTitle);
+
             if (currentTopicType == null || topicTitle == null) {
+                Log.e(TAG, "onCreate: Topic type or title is null!");
                 finish();
                 return;
             }
 
+            Log.d(TAG, "onCreate: Initializing views");
             initViews();
 
+            Log.d(TAG, "onCreate: Setting up topic data");
             setupTopicData(currentTopicType, topicTitle);
 
+            Log.d(TAG, "onCreate: Setting up RecyclerView");
             setupRecyclerView();
 
+            Log.d(TAG, "onCreate: Setting up listeners");
             setupListeners();
 
+            Log.d(TAG, "onCreate: Loading stories data");
             loadStoriesDataAsync();
 
+            Log.d(TAG, "onCreate: Setting up bottom navigation");
             setupBottomNavigation();
 
+            Log.d(TAG, "onCreate: Completed successfully");
+
         } catch (Exception e) {
-            Log.e(TAG, "Error in onCreate", e);
+            Log.e(TAG, "Error in onCreate: " + e.getMessage(), e);
+            e.printStackTrace();
             finish();
         }
     }
 
     private void initViews() {
+        Log.d(TAG, "initViews: Starting...");
+
         tvTopicTitle = findViewById(R.id.tv_topic_title);
+        Log.d(TAG, "initViews: tv_topic_title = " + (tvTopicTitle != null ? "OK" : "NULL"));
+
         tvTopicDescription = findViewById(R.id.tv_topic_description);
+        Log.d(TAG, "initViews: tv_topic_description = " + (tvTopicDescription != null ? "OK" : "NULL"));
+
         rvStories = findViewById(R.id.rv_stories);
+        Log.d(TAG, "initViews: rv_stories = " + (rvStories != null ? "OK" : "NULL"));
+
         layoutEmpty = findViewById(R.id.layout_empty);
+        Log.d(TAG, "initViews: layout_empty = " + (layoutEmpty != null ? "OK" : "NULL"));
+
         btnBack = findViewById(R.id.btn_back);
+        Log.d(TAG, "initViews: btn_back = " + (btnBack != null ? "OK" : "NULL"));
+
+        // Check for null views
+        if (tvTopicTitle == null || tvTopicDescription == null ||
+            rvStories == null || layoutEmpty == null || btnBack == null) {
+            String errorMsg = "One or more views are null! ";
+            if (tvTopicTitle == null) errorMsg += "tv_topic_title ";
+            if (tvTopicDescription == null) errorMsg += "tv_topic_description ";
+            if (rvStories == null) errorMsg += "rv_stories ";
+            if (layoutEmpty == null) errorMsg += "layout_empty ";
+            if (btnBack == null) errorMsg += "btn_back ";
+
+            Log.e(TAG, "initViews: " + errorMsg);
+            throw new RuntimeException("Failed to initialize views: " + errorMsg);
+        }
+
+        Log.d(TAG, "initViews: All views initialized successfully");
     }
 
     /**
@@ -103,7 +145,9 @@ public class TopicActivity extends AppCompatActivity {
      * TODO: Lấy topic metadata từ database
      */
     private void setupTopicData(String topicType, String topicTitle) {
-        tvTopicTitle.setText(topicTitle);
+        if (tvTopicTitle != null) {
+            tvTopicTitle.setText(topicTitle);
+        }
 
         String description;
         switch (topicType) {
@@ -126,7 +170,9 @@ public class TopicActivity extends AppCompatActivity {
                 description = "Khám phá thế giới truyện với những câu chuyện hay và ý nghĩa";
         }
 
-        tvTopicDescription.setText(description);
+        if (tvTopicDescription != null) {
+            tvTopicDescription.setText(description);
+        }
     }
 
     private void setupRecyclerView() {
