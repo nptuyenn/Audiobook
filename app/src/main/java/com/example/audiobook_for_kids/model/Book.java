@@ -9,7 +9,11 @@ public class Book {
     private String description;
     private String category;
 
-    // Constructor, getter, setter
+    // Constructor mặc định (cần thiết cho Firebase và Serialization)
+    public Book() {
+    }
+
+    // Constructor đầy đủ
     public Book(String _id, String title, String author, String coverUrl, String description, String category) {
         this._id = _id;
         this.title = title;

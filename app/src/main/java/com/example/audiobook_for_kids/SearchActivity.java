@@ -2,58 +2,57 @@ package com.example.audiobook_for_kids;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 public class SearchActivity extends AppCompatActivity {
-
-    private static final String TAG = "SearchActivity";
-
-    private EditText etSearch;
-    private ImageView ivBack;
-    private ImageView ivClearSearch;
-    private RecyclerView rvSearchResults;
-    private TextView searchSuggest;
-    private TextView recentSearch;
-
-    // Topic CardViews
-    private View cardTopic1, cardTopic2, cardTopic3, cardTopic4, cardTopic5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
+        ImageView iv_back = findViewById(R.id.iv_back);
+        if (iv_back != null) {
+            iv_back.setOnClickListener(v -> {
+                Intent intent = new Intent(SearchActivity.this, MainActivity.class);
+                startActivity(intent);
+            });
+        }
 
         try {
             setupTopicClickListeners();
         } catch (Exception e) {
-            e.printStackTrace();
+            Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
+    }
 
-       }
     private void setupTopicClickListeners() {
-        findViewById(R.id.card_cotich).setOnClickListener(v ->
+        // Cổ tích
+        View cardCoTich = findViewById(R.id.card_cotich);
+        cardCoTich.setOnClickListener(v ->
                 openTopicActivity(TopicActivity.TOPIC_CO_TICH, "Cổ tích"));
 
-        findViewById(R.id.card_nuoc_ngoai).setOnClickListener(v ->
+        // Nước ngoài
+        View cardNuocNgoai = findViewById(R.id.card_nuoc_ngoai);
+        cardNuocNgoai.setOnClickListener(v ->
                 openTopicActivity(TopicActivity.TOPIC_NUOC_NGOAI, "Nước ngoài"));
 
-        findViewById(R.id.card_ngu_ngon).setOnClickListener(v ->
+        // Ngụ ngôn
+        View cardNguNgon = findViewById(R.id.card_ngu_ngon);
+        cardNguNgon.setOnClickListener(v ->
                 openTopicActivity(TopicActivity.TOPIC_NGU_NGON, "Ngụ ngôn"));
 
-        findViewById(R.id.card_giao_duc).setOnClickListener(v ->
+        // Giáo dục
+        View cardGiaoDuc = findViewById(R.id.card_giao_duc);
+        cardGiaoDuc.setOnClickListener(v ->
                 openTopicActivity(TopicActivity.TOPIC_GIAO_DUC, "Giáo dục"));
 
-        findViewById(R.id.card_phieu_luu).setOnClickListener(v ->
+        // Phiêu lưu
+        View cardPhieuLuu = findViewById(R.id.card_phieu_luu);
+        cardPhieuLuu.setOnClickListener(v ->
                 openTopicActivity(TopicActivity.TOPIC_PHIEU_LUU, "Phiêu lưu"));
     }
 
@@ -64,9 +63,8 @@ public class SearchActivity extends AppCompatActivity {
             intent.putExtra(TopicActivity.EXTRA_TOPIC_TITLE, topicTitle);
             startActivity(intent);
         } catch (Exception e) {
-            e.printStackTrace();
+            Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
-
 
 }

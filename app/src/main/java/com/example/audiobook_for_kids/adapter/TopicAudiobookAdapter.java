@@ -51,19 +51,19 @@ public class TopicAudiobookAdapter extends RecyclerView.Adapter<TopicAudiobookAd
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ShapeableImageView ivCover;
         TextView tvTitle;
-        TextView tvAuthor;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
             ivCover = itemView.findViewById(R.id.iv_cover);
             tvTitle = itemView.findViewById(R.id.tv_title);
-            tvAuthor = itemView.findViewById(R.id.tv_author);
         }
 
         public void bind(Book item, OnItemClickListener listener) {
-            tvTitle.setText(item.getTitle());
-            tvAuthor.setText(item.getAuthor());
+            // Chỉ set title vì layout item_audiobook chỉ có iv_cover và tv_title
+            if (tvTitle != null) {
+                tvTitle.setText(item.getTitle());
+            }
 
             // Load image using Glide to handle both URLs and resource URIs
             String coverUrl = item.getCoverUrl();

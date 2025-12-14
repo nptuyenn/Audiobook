@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.audiobook_for_kids.R;
@@ -30,34 +31,45 @@ public class AudiobookAdapter extends RecyclerView.Adapter<AudiobookAdapter.View
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_audiobook_cover, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_audiobook, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Book book = books.get(position);
-        holder.tvTitle.setText(book.getTitle());
-        holder.tvAuthor.setText(book.getAuthor());
-        Glide.with(context).load(book.getCoverUrl()).into(holder.ivCover);
 
-        holder.itemView.setOnClickListener(v -> listener.onBookClick(book));
+        // Hiển thị tên sách
+        holder.tvTitle.setText(book.getTitle());
+
+        // Load ảnh bìa với Glide
+        Glide.with(context)
+            .load(book.getCoverUrl())
+            .placeholder(R.color.teal_200) // Màu tạm khi đang load
+            .error(R.color.black)          // Màu khi lỗi
+            .centerCrop()
+            .into(holder.ivCover);
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onBookClick(book);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return books.size();
+        return books != null ? books.size() : 0;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivCover;
-        TextView tvTitle, tvAuthor;
+        TextView tvTitle;
 
         ViewHolder(View itemView) {
             super(itemView);
             ivCover = itemView.findViewById(R.id.iv_cover);
             tvTitle = itemView.findViewById(R.id.tv_title);
-            tvAuthor = itemView.findViewById(R.id.tv_author);
         }
     }
 }
