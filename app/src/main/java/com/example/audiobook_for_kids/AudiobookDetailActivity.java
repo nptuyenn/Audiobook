@@ -1,5 +1,6 @@
 package com.example.audiobook_for_kids;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -54,28 +55,42 @@ public class AudiobookDetailActivity extends AppCompatActivity {
 
     private void loadDataFromIntent() {
         // Nhận dữ liệu từ Intent
-        int coverResId = getIntent().getIntExtra("COVER_RES_ID", 0);
+        Intent intent = getIntent();
+        if (intent != null) {
+            // Lấy dữ liệu sách từ intent
+            String bookTitle = intent.getStringExtra("book_title");
+            String bookAuthor = intent.getStringExtra("book_author");
+            String bookCover = intent.getStringExtra("book_cover");
+            String bookDescription = intent.getStringExtra("book_description");
 
-        // Hiển thị ảnh bìa nếu có
-        if (coverResId != 0) {
-            ivCover.setImageResource(coverResId);
+            // Hiển thị dữ liệu nếu có
+            if (bookTitle != null) {
+                tvTitle.setText(bookTitle);
+            } else {
+                tvTitle.setText("Alice's Adventures in Wonderland");
+            }
+
+            if (bookAuthor != null) {
+                tvAuthor.setText("Tác giả: " + bookAuthor);
+            } else {
+                tvAuthor.setText("Tác giả:  Lewis Carroll");
+            }
+
+            if (bookDescription != null && !bookDescription.isEmpty()) {
+                tvDescription.setText(bookDescription);
+            } else {
+                tvDescription.setText(
+                    "Alice tình cờ đuổi theo một chú thỏ trắng biết nói và rơi vào Xứ Sở Thần Tiên, nơi cô trải qua hàng loạt cuộc phiêu lưu kỳ quái: " +
+                            "lúc to lúc nhỏ, gặp mèo Cheshire bí ẩn, tiệc trà điên loạn và Nữ Hoàng Đỏ thích ra lệnh chém đầu. " +
+                            "Sau khi bị cuốn vào một phiên tòa hỗn loạn, Alice bất ngờ tỉnh dậy và nhận ra tất cả chỉ là một giấc mơ lạ lùng.\n\n" +
+                            "Bài học: Câu chuyện nhắc ta hãy giữ sự tò mò và bản sắc riêng của mình trong một thế giới đầy điều vô lý và biến đổi."
+                );
+            }
         }
 
-        // TODO: Khi có backend, nhận bookId và gọi API để lấy dữ liệu đầy đủ
-        // String bookId = getIntent().getStringExtra("BOOK_ID");
-        // loadBookDetails(bookId);
-
-        // Dữ liệu mẫu (thay bằng dữ liệu thực tế từ API)
-        tvTitle.setText("Alice's Adventures in Wonderland");
-        tvAuthor.setText("Tác giả:  Lewis Carroll");
+        // Hiển thị thông tin mặc định khác
         tvDuration.setText("12 phút");
         tvRating.setText("4.8 ⭐");
-        tvDescription.setText(
-                "Alice tình cờ đuổi theo một chú thỏ trắng biết nói và rơi vào Xứ Sở Thần Tiên, nơi cô trải qua hàng loạt cuộc phiêu lưu kỳ quái: " +
-                        "lúc to lúc nhỏ, gặp mèo Cheshire bí ẩn, tiệc trà điên loạn và Nữ Hoàng Đỏ thích ra lệnh chém đầu. " +
-                        "Sau khi bị cuốn vào một phiên tòa hỗn loạn, Alice bất ngờ tỉnh dậy và nhận ra tất cả chỉ là một giấc mơ lạ lùng.\n\n" +
-                        "Bài học: Câu chuyện nhắc ta hãy giữ sự tò mò và bản sắc riêng của mình trong một thế giới đầy điều vô lý và biến đổi."
-        );
     }
 
     private void setupClickListeners() {
@@ -103,10 +118,32 @@ public class AudiobookDetailActivity extends AppCompatActivity {
     }
 
     private void playAudiobook() {
-        // TODO: Mở màn hình player hoặc bắt đầu phát audio
-        Toast.makeText(this, "Bắt đầu phát truyện...", Toast.LENGTH_SHORT).show();
+        try {
+            Intent intent = new Intent(this, PlayerActivity.class);
 
-        // Ví dụ: Mở PlayerActivity
+            // Truyền dữ liệu sách sang PlayerActivity
+            Intent currentIntent = getIntent();
+            if (currentIntent != null) {
+                intent.putExtra("book_title", currentIntent.getStringExtra("book_title"));
+                intent.putExtra("book_author", currentIntent.getStringExtra("book_author"));
+                intent.putExtra("book_cover", currentIntent.getStringExtra("book_cover"));
+                intent.putExtra("book_id", currentIntent.getStringExtra("book_id"));
+            } else {
+                // Dữ liệu mặc định nếu không có intent
+                intent.putExtra("book_title", tvTitle.getText().toString());
+                intent.putExtra("book_author", tvAuthor.getText().toString().replace("Tác giả: ", ""));
+                intent.putExtra("book_cover", "");
+                intent.putExtra("book_id", "1");
+            }
 
+            startActivity(intent);
+
+            // Hiệu ứng: PlayerActivity trượt lên từ dưới, trang hiện tại giữ nguyên
+            overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation);
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Không thể mở trình phát audio: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
     }
 }

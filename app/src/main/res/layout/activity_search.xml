@@ -182,7 +182,7 @@
                             android:layout_height="wrap_content"
                             android:text="Cổ tích"
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold"/>
 
                     </LinearLayout>
@@ -212,7 +212,7 @@
                             android:layout_height="wrap_content"
                             android:text="Nước ngoài"
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold" />
 
 
@@ -253,7 +253,7 @@
                             android:layout_height="wrap_content"
                             android:text="Ngụ ngôn"
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold"
                             android:gravity="center" />
 
@@ -285,7 +285,7 @@
                             android:layout_height="wrap_content"
                             android:text="Phiêu Lưu"
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold"
  />
 
@@ -325,7 +325,7 @@
                             android:layout_height="wrap_content"
                             android:text="Giáo dục"
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold" />
 
 
@@ -357,7 +357,7 @@
                             android:layout_height="wrap_content"
                             android:text="Gia đình  "
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold" />
 
 
@@ -397,7 +397,7 @@
                             android:layout_height="wrap_content"
                             android:text="Kỹ năng sống"
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold" />
 
                     </LinearLayout>
@@ -426,7 +426,7 @@
                             android:layout_height="wrap_content"
                             android:text="Tình bạn"
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold" />
 
 
@@ -467,7 +467,7 @@
                             android:layout_height="wrap_content"
                             android:text="Khoa học"
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold" />
 
                     </LinearLayout>
@@ -497,7 +497,7 @@
                             android:layout_height="wrap_content"
                             android:text="Trường lớp"
                             android:textSize="18sp"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#283E50"
                             android:textStyle="bold" />
 
 

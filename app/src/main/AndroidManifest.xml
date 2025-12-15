@@ -63,7 +63,11 @@
             android:name=".TopicActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".VerifyOtpActivity" />
+        <activity
+            android:name=".PlayerActivity"
+            android:exported="false"
+            android:parentActivityName=".AudiobookDetailActivity" />
+
     </application>
 
 </manifest>
