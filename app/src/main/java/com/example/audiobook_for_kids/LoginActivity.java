@@ -35,13 +35,16 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
-            overridePendingTransition(R.anim.slide_up_enter, R.anim.slide_down_exit);
+            // Hiệu ứng: MainActivity giữ nguyên, LoginActivity trượt xuống (smooth version)
+            overridePendingTransition(R.anim.no_animation, R.anim.slide_out_down);
             finish();
         });
 
         findViewById(R.id.btn_login).setOnClickListener(v -> handleLogin());
         findViewById(R.id.tv_register).setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, SignUpActivity.class));
+            // Hiệu ứng: SignUpActivity trượt lên từ dưới, LoginActivity giữ nguyên (smooth version)
+            overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation);
         });
     }
 
@@ -133,6 +136,8 @@ public class LoginActivity extends AppCompatActivity {
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent);
+                            // Hiệu ứng: MainActivity giữ nguyên, LoginActivity trượt xuống (smooth version)
+                            overridePendingTransition(R.anim.no_animation, R.anim.slide_out_down);
                             finish();
                         } else {
                             String message = respJson.has("message")

@@ -336,6 +336,8 @@ public class AccountActivity extends AppCompatActivity {
         Intent intent = new Intent(AccountActivity.this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        // Hiệu ứng: LoginActivity trượt lên từ dưới, AccountActivity giữ nguyên (smooth version)
+        overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation);
         finish();
     }
 

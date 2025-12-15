@@ -37,13 +37,16 @@ public class SignUpActivity extends AppCompatActivity {
         btnSignUp.setOnClickListener(v -> handleSignUp());
         findViewById(R.id.tv_login).setOnClickListener(v -> {
             startActivity(new Intent(SignUpActivity.this, LoginActivity.class));
+            // Hiệu ứng: LoginActivity giữ nguyên, SignUpActivity trượt xuống (smooth version)
+            overridePendingTransition(R.anim.no_animation, R.anim.slide_out_down);
         });
         // Xử lý nút quay lại - về trang chủ với hiệu ứng slide down
         findViewById(R.id.btn_back).setOnClickListener(v -> {
             Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
-            overridePendingTransition(R.anim.slide_up_enter, R.anim.slide_down_exit);
+            // Hiệu ứng: MainActivity giữ nguyên, SignUpActivity trượt xuống (smooth version)
+            overridePendingTransition(R.anim.no_animation, R.anim.slide_out_down);
             finish();
         });
     }

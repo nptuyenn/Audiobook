@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         btn_login.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
+            // Hiệu ứng: LoginActivity trượt lên từ dưới, MainActivity giữ nguyên (smooth version)
+            overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation);
         });
 
         LinearLayout search_bar = findViewById(R.id.search_bar);
