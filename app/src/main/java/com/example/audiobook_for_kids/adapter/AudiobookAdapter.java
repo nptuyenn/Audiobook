@@ -62,6 +62,11 @@ public class AudiobookAdapter extends RecyclerView.Adapter<AudiobookAdapter.View
         return books != null ? books.size() : 0;
     }
 
+    public void setBooks(List<Book> newBooks) {
+        this.books = newBooks;
+        notifyDataSetChanged();
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivCover;
         TextView tvTitle;

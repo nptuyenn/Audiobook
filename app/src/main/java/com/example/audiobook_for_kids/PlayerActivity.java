@@ -53,6 +53,9 @@ public class PlayerActivity extends AppCompatActivity {
 
     private int defaultBackgroundColor;
 
+    // audio url from intent
+    private String audioUrl = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,8 +64,9 @@ public class PlayerActivity extends AppCompatActivity {
         defaultBackgroundColor = Color.parseColor("#FFFDF5");
 
         initViews();
-        setupMediaPlayer();
+        // LƯU Ý: load intent trước khi khởi tạo MediaPlayer để có thể dùng audioUrl
         loadDataFromIntent();
+        setupMediaPlayer();
         setupClickListeners();
     }
 
@@ -94,11 +98,9 @@ public class PlayerActivity extends AppCompatActivity {
     private void setupMediaPlayer() {
         mediaPlayer = new MediaPlayer();
 
-        // TODO: Thay thế URL này bằng URL thật từ Intent hoặc API
         try {
-            // Link nhạc demo (MP3 online)
-            String demoUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
-            mediaPlayer.setDataSource(demoUrl);
+            String source = audioUrl != null && !audioUrl.isEmpty() ? audioUrl : "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+            mediaPlayer.setDataSource(source);
             mediaPlayer.prepareAsync();
 
             mediaPlayer.setOnPreparedListener(mp -> {
@@ -138,6 +140,11 @@ public class PlayerActivity extends AppCompatActivity {
         String title = intent.getStringExtra("book_title");
         String author = intent.getStringExtra("book_author");
         String coverUrl = intent.getStringExtra("book_cover"); // Hoặc "book_cover_url"
+        String passedAudioUrl = intent.getStringExtra("audio_url");
+
+        if (passedAudioUrl != null && !passedAudioUrl.isEmpty()) {
+            audioUrl = passedAudioUrl;
+        }
 
         tvPlayerTitle.setText(title != null ? title : "Đang tải...");
         tvPlayerAuthor.setText(author != null ? author : "KidoBook");
@@ -354,3 +361,4 @@ public class PlayerActivity extends AppCompatActivity {
         handler.removeCallbacks(updateSeekBar);
     }
 }
+

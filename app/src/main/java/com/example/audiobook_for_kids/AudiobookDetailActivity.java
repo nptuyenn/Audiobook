@@ -8,7 +8,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import com.google.android.material.button.MaterialButton;
+
+import com.example.audiobook_for_kids.adapter.ChapterAdapter;
+import com.example.audiobook_for_kids.model.AudioChapter;
+import com.example.audiobook_for_kids.repository.AudioRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AudiobookDetailActivity extends AppCompatActivity {
 
@@ -25,6 +33,11 @@ public class AudiobookDetailActivity extends AppCompatActivity {
 
     private boolean isFavorite = false;
 
+    // repositories & adapter
+    private AudioRepository audioRepository;
+    private ChapterAdapter chapterAdapter;
+    private java.util.List<AudioChapter> currentChapters = new java.util.ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +48,9 @@ public class AudiobookDetailActivity extends AppCompatActivity {
 
         // Nhận dữ liệu từ Intent
         loadDataFromIntent();
+
+        // Setup chapter list UI
+        setupChapterList();
 
         // Xử lý sự kiện
         setupClickListeners();
@@ -53,6 +69,11 @@ public class AudiobookDetailActivity extends AppCompatActivity {
         rvEpisodes = findViewById(R.id.rv_episodes);
     }
 
+    private String currentBookId = null;
+    private String currentBookTitle = null;
+    private String currentBookAuthor = null;
+    private String currentBookCover = null;
+
     private void loadDataFromIntent() {
         // Nhận dữ liệu từ Intent
         Intent intent = getIntent();
@@ -62,6 +83,12 @@ public class AudiobookDetailActivity extends AppCompatActivity {
             String bookAuthor = intent.getStringExtra("book_author");
             String bookCover = intent.getStringExtra("book_cover");
             String bookDescription = intent.getStringExtra("book_description");
+            String bookId = intent.getStringExtra("book_id");
+
+            currentBookId = bookId;
+            currentBookTitle = bookTitle;
+            currentBookAuthor = bookAuthor;
+            currentBookCover = bookCover;
 
             // Hiển thị dữ liệu nếu có
             if (bookTitle != null) {
@@ -91,6 +118,36 @@ public class AudiobookDetailActivity extends AppCompatActivity {
         // Hiển thị thông tin mặc định khác
         tvDuration.setText("12 phút");
         tvRating.setText("4.8 ⭐");
+    }
+
+    private void setupChapterList() {
+        rvEpisodes.setLayoutManager(new LinearLayoutManager(this));
+        chapterAdapter = new ChapterAdapter(this, new ArrayList<>(), chapter -> {
+            // On chapter click -> open PlayerActivity and pass audio url + metadata
+            Intent intent = new Intent(AudiobookDetailActivity.this, PlayerActivity.class);
+            intent.putExtra("book_title", currentBookTitle);
+            intent.putExtra("book_author", currentBookAuthor);
+            intent.putExtra("book_cover", currentBookCover);
+            intent.putExtra("audio_url", chapter.getAudioUrl());
+            startActivity(intent);
+        });
+        rvEpisodes.setAdapter(chapterAdapter);
+
+        audioRepository = AudioRepository.getInstance();
+        audioRepository.getError().observe(this, msg -> {
+            if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        });
+        audioRepository.getChaptersLiveData().observe(this, chapters -> {
+            if (chapters != null) {
+                currentChapters = chapters;
+                chapterAdapter.setChapters(chapters);
+            }
+        });
+
+        // Trigger load if we have book id
+        if (currentBookId != null && !currentBookId.isEmpty()) {
+            audioRepository.fetchChapters(currentBookId);
+        }
     }
 
     private void setupClickListeners() {
@@ -134,6 +191,11 @@ public class AudiobookDetailActivity extends AppCompatActivity {
                 intent.putExtra("book_author", tvAuthor.getText().toString().replace("Tác giả: ", ""));
                 intent.putExtra("book_cover", "");
                 intent.putExtra("book_id", "1");
+            }
+
+            // Nếu đã tải danh sách chương, truyền audio_url của chương đầu tiên để tự động phát
+            if (currentChapters != null && !currentChapters.isEmpty()) {
+                intent.putExtra("audio_url", currentChapters.get(0).getAudioUrl());
             }
 
             startActivity(intent);

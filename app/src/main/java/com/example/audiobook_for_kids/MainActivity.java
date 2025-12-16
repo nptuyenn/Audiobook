@@ -17,12 +17,23 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.audiobook_for_kids.repository.BookRepository;
+import androidx.lifecycle.Observer;
+
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView rvFeatured;
     private RecyclerView rvSuggestions;
     private RecyclerView rvQuickPicks;
     private RecyclerView rvFamousAuthors;
+
+    // Adapters
+    private AudiobookAdapter featuredAdapter;
+    private AudiobookAdapter suggestionsAdapter;
+    private AudiobookAdapter quickPicksAdapter;
+    private AudiobookAdapter famousAuthorsAdapter;
+
+    private BookRepository bookRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +70,27 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, SearchActivity.class);
             startActivity(intent);
         });
+
+        // Initialize repository and observe data
+        bookRepository = BookRepository.getInstance();
+        bookRepository.getLoading().observe(this, isLoading -> {
+            // TODO: show/hide a ProgressBar if you add one to layout
+        });
+        bookRepository.getError().observe(this, errorMsg -> {
+            if (errorMsg != null) Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+        });
+        bookRepository.getBooksLiveData().observe(this, books -> {
+            if (books != null) {
+                // For now, populate all lists with same data. Later you can filter by category.
+                featuredAdapter.setBooks(books);
+                suggestionsAdapter.setBooks(books);
+                quickPicksAdapter.setBooks(books);
+                famousAuthorsAdapter.setBooks(books);
+            }
+        });
+
+        // Trigger initial load
+        bookRepository.fetchBooks();
     }
 
     @Override
@@ -73,9 +105,8 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         rvFeatured.setLayoutManager(layoutManager);
 
-        List<Book> featuredBooks = getMockFeaturedBooks();
-
-        AudiobookAdapter featuredAdapter = new AudiobookAdapter(this, featuredBooks, book -> {
+        // Start with empty list; will be filled when API returns
+        featuredAdapter = new AudiobookAdapter(this, new ArrayList<>(), book -> {
             // Xử lý khi click vào sách
             openBookDetail(book);
         });
@@ -87,10 +118,8 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         rvSuggestions.setLayoutManager(layoutManager);
 
-        // ===== DỮ LIỆU GIẢ - MOCK DATA =====
-        List<Book> suggestionBooks = getMockSuggestionBooks();
-
-        AudiobookAdapter suggestionsAdapter = new AudiobookAdapter(this, suggestionBooks, book -> {
+        // Start empty
+        suggestionsAdapter = new AudiobookAdapter(this, new ArrayList<>(), book -> {
             // Xử lý khi click vào sách
             openBookDetail(book);
         });
@@ -207,9 +236,7 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         rvQuickPicks.setLayoutManager(layoutManager);
 
-        List<Book> quickPicksBooks = getMockQuickPicksBooks();
-
-        AudiobookAdapter quickPicksAdapter = new AudiobookAdapter(this, quickPicksBooks, book -> {
+        quickPicksAdapter = new AudiobookAdapter(this, new ArrayList<>(), book -> {
             openBookDetail(book);
         });
         rvQuickPicks.setAdapter(quickPicksAdapter);
@@ -221,9 +248,7 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         rvFamousAuthors.setLayoutManager(layoutManager);
 
-        List<Book> famousAuthorsBooks = getMockFamousAuthorsBooks();
-
-        AudiobookAdapter famousAuthorsAdapter = new AudiobookAdapter(this, famousAuthorsBooks, book -> {
+        famousAuthorsAdapter = new AudiobookAdapter(this, new ArrayList<>(), book -> {
             openBookDetail(book);
         });
         rvFamousAuthors.setAdapter(famousAuthorsAdapter);
