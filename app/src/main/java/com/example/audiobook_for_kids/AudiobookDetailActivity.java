@@ -18,6 +18,9 @@ import com.example.audiobook_for_kids.repository.AudioRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+// Added Glide import
+import com.bumptech.glide.Glide;
+
 public class AudiobookDetailActivity extends AppCompatActivity {
 
     private ImageView ivCover;
@@ -113,6 +116,16 @@ public class AudiobookDetailActivity extends AppCompatActivity {
                             "Bài học: Câu chuyện nhắc ta hãy giữ sự tò mò và bản sắc riêng của mình trong một thế giới đầy điều vô lý và biến đổi."
                 );
             }
+
+            // Load cover image if available using Glide
+            if (currentBookCover != null && !currentBookCover.isEmpty()) {
+                Glide.with(this)
+                        .load(currentBookCover)
+                        .placeholder(R.color.teal_200)
+                        .error(R.color.black)
+                        .centerCrop()
+                        .into(ivCover);
+            }
         }
 
         // Hiển thị thông tin mặc định khác
@@ -129,6 +142,7 @@ public class AudiobookDetailActivity extends AppCompatActivity {
             intent.putExtra("book_author", currentBookAuthor);
             intent.putExtra("book_cover", currentBookCover);
             intent.putExtra("audio_url", chapter.getAudioUrl());
+            intent.putExtra("book_id", currentBookId);
             startActivity(intent);
         });
         rvEpisodes.setAdapter(chapterAdapter);

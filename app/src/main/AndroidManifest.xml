@@ -32,6 +32,10 @@
             android:name=".LoginActivity"
             android:exported="false" />
         <activity
+            android:name=".ForgotPasswordActivity"
+            android:exported="false"
+            android:parentActivityName=".LoginActivity" />
+        <activity
             android:name=".SignUpActivity"
             android:exported="false"
             android:parentActivityName=".LoginActivity" />

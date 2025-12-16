@@ -46,6 +46,12 @@ public class LoginActivity extends AppCompatActivity {
             // Hiệu ứng: SignUpActivity trượt lên từ dưới, LoginActivity giữ nguyên (smooth version)
             overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation);
         });
+
+        // Open ForgotPasswordActivity when clicking "Quên mật khẩu?"
+        findViewById(R.id.tv_forgot_password).setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
+            overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation);
+        });
     }
 
     private void handleLogin() {

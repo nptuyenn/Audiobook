@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -31,6 +32,14 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Locale;
+
+// Added imports
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import com.example.audiobook_for_kids.adapter.ChapterAdapter;
+import com.example.audiobook_for_kids.model.AudioChapter;
+import com.example.audiobook_for_kids.repository.AudioRepository;
+import java.util.ArrayList;
 
 public class PlayerActivity extends AppCompatActivity {
 
@@ -55,6 +64,11 @@ public class PlayerActivity extends AppCompatActivity {
 
     // audio url from intent
     private String audioUrl = null;
+    private String bookId = null;
+
+    // repository & adapter
+    private AudioRepository audioRepository;
+    private ArrayList<AudioChapter> chapters = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +82,22 @@ public class PlayerActivity extends AppCompatActivity {
         loadDataFromIntent();
         setupMediaPlayer();
         setupClickListeners();
+
+        // Setup repository to fetch chapters for this book (if bookId provided)
+        audioRepository = AudioRepository.getInstance();
+        audioRepository.getError().observe(this, msg -> {
+            if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        });
+        audioRepository.getChaptersLiveData().observe(this, list -> {
+            if (list != null) {
+                chapters.clear();
+                chapters.addAll(list);
+            }
+        });
+
+        if (bookId != null && !bookId.isEmpty()) {
+            audioRepository.fetchChapters(bookId);
+        }
     }
 
     private void initViews() {
@@ -141,9 +171,14 @@ public class PlayerActivity extends AppCompatActivity {
         String author = intent.getStringExtra("book_author");
         String coverUrl = intent.getStringExtra("book_cover"); // Hoặc "book_cover_url"
         String passedAudioUrl = intent.getStringExtra("audio_url");
+        String passedBookId = intent.getStringExtra("book_id");
 
         if (passedAudioUrl != null && !passedAudioUrl.isEmpty()) {
             audioUrl = passedAudioUrl;
+        }
+
+        if (passedBookId != null) {
+            bookId = passedBookId;
         }
 
         tvPlayerTitle.setText(title != null ? title : "Đang tải...");
@@ -287,11 +322,8 @@ public class PlayerActivity extends AppCompatActivity {
         // Xử lý nút Tốc độ
         btnSpeed.setOnClickListener(v -> showSpeedDialog());
 
-        // Xử lý nút Chương (Placeholder)
-        btnChapters.setOnClickListener(v -> {
-            // TODO: Hiển thị BottomSheet chứa danh sách chương
-            Toast.makeText(this, "Danh sách chương đang cập nhật", Toast.LENGTH_SHORT).show();
-        });
+        // Xử lý nút Chương -> show bottom sheet list
+        btnChapters.setOnClickListener(v -> showChaptersBottomSheet());
     }
 
     private void playAudio() {
@@ -360,5 +392,38 @@ public class PlayerActivity extends AppCompatActivity {
         }
         handler.removeCallbacks(updateSeekBar);
     }
-}
 
+    // New: show bottom sheet with chapter list
+    private void showChaptersBottomSheet() {
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View sheet = getLayoutInflater().inflate(R.layout.bottom_sheet_chapters, null);
+        RecyclerView rvChapters = sheet.findViewById(R.id.rv_chapters);
+        rvChapters.setLayoutManager(new LinearLayoutManager(this));
+        ChapterAdapter adapter = new ChapterAdapter(this, chapters, chapter -> {
+            // When chapter selected: change media source and play
+            try {
+                if (mediaPlayer != null) {
+                    mediaPlayer.reset();
+                    mediaPlayer.setDataSource(chapter.getAudioUrl());
+                    mediaPlayer.prepareAsync();
+                    mediaPlayer.setOnPreparedListener(mp -> {
+                        playAudio();
+                        tvTotalTime.setText(formatTime(mp.getDuration()));
+                        sbProgress.setMax(mp.getDuration());
+                    });
+                    // update displayed title/author if desired
+                    tvPlayerTitle.setText(chapter.getTitle());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Không thể phát chương: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+            dialog.dismiss();
+        });
+        rvChapters.setAdapter(adapter);
+
+        // If chapters list empty, show a placeholder message
+        dialog.setContentView(sheet);
+        dialog.show();
+    }
+}
