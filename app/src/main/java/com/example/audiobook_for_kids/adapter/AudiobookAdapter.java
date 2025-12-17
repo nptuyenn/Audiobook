@@ -50,6 +50,13 @@ public class AudiobookAdapter extends RecyclerView.Adapter<AudiobookAdapter.View
             .centerCrop()
             .into(holder.ivCover);
 
+        // Show favorite badge if marked
+        if (book.isFavorite()) {
+            holder.ivFavBadge.setVisibility(View.VISIBLE);
+        } else {
+            holder.ivFavBadge.setVisibility(View.GONE);
+        }
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onBookClick(book);
@@ -70,11 +77,13 @@ public class AudiobookAdapter extends RecyclerView.Adapter<AudiobookAdapter.View
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivCover;
         TextView tvTitle;
+        ImageView ivFavBadge;
 
         ViewHolder(View itemView) {
             super(itemView);
             ivCover = itemView.findViewById(R.id.iv_cover);
             tvTitle = itemView.findViewById(R.id.tv_title);
+            ivFavBadge = itemView.findViewById(R.id.iv_favorite_badge);
         }
     }
 }

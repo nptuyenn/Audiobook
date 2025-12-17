@@ -14,6 +14,8 @@ import com.google.android.material.button.MaterialButton;
 import com.example.audiobook_for_kids.adapter.ChapterAdapter;
 import com.example.audiobook_for_kids.model.AudioChapter;
 import com.example.audiobook_for_kids.repository.AudioRepository;
+import com.example.audiobook_for_kids.repository.UserActivityRepository;
+import com.example.audiobook_for_kids.model.FavoriteBook;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +43,9 @@ public class AudiobookDetailActivity extends AppCompatActivity {
     private ChapterAdapter chapterAdapter;
     private java.util.List<AudioChapter> currentChapters = new java.util.ArrayList<>();
 
+    // User activity repo
+    private UserActivityRepository activityRepo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +59,26 @@ public class AudiobookDetailActivity extends AppCompatActivity {
 
         // Setup chapter list UI
         setupChapterList();
+
+        // Setup activity repo
+        activityRepo = UserActivityRepository.getInstance(this);
+        activityRepo.getError().observe(this, msg -> { if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_SHORT).show(); });
+        activityRepo.getFavoritesLive().observe(this, favs -> {
+            // update favorite state if current book in favorites
+            if (favs != null && currentBookId != null) {
+                boolean found = false;
+                for (FavoriteBook fb : favs) {
+                    if (fb.getBookId() != null && fb.getBookId().equals(currentBookId)) {
+                        found = true;
+                        break;
+                    }
+                }
+                setFavoriteUI(found, false);
+            }
+        });
+
+        // Try to fetch favorites (if logged in)
+        activityRepo.fetchFavorites();
 
         // Xử lý sự kiện
         setupClickListeners();
@@ -173,19 +198,76 @@ public class AudiobookDetailActivity extends AppCompatActivity {
 
         // Nút phát truyện
         btnPlay.setOnClickListener(v -> playAudiobook());
+
+        // Gửi đánh giá khi nhấn vào tvRating
+        tvRating.setOnClickListener(v -> showRatingDialog());
+    }
+
+    private void showRatingDialog() {
+        if (currentBookId == null) {
+            Toast.makeText(this, "Không có sách để đánh giá", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final String[] options = {"1 ⭐", "2 ⭐", "3 ⭐", "4 ⭐", "5 ⭐"};
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Đánh giá sách")
+                .setSingleChoiceItems(options, -1, (dialog, which) -> {
+                    int rating = which + 1;
+                    // Send review with empty text for now
+                    activityRepo.submitReview(currentBookId, rating, "", new retrofit2.Callback<Void>() {
+                        @Override
+                        public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                            if (response.isSuccessful()) {
+                                runOnUiThread(() -> Toast.makeText(AudiobookDetailActivity.this, "Cảm ơn bạn đã đánh giá", Toast.LENGTH_SHORT).show());
+                                dialog.dismiss();
+                            } else {
+                                runOnUiThread(() -> Toast.makeText(AudiobookDetailActivity.this, "Không thể gửi đánh giá: " + response.code(), Toast.LENGTH_SHORT).show());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                            runOnUiThread(() -> Toast.makeText(AudiobookDetailActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show());
+                        }
+                    });
+                })
+                .setNegativeButton("Hủy", (d, w) -> d.dismiss())
+                .show();
+    }
+
+    private void setFavoriteUI(boolean fav, boolean showToast) {
+        isFavorite = fav;
+        if (isFavorite) {
+            btnFavorite.setImageResource(R.drawable.ic_favorite_filled);
+            if (showToast) Toast.makeText(this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+        } else {
+            btnFavorite.setImageResource(R.drawable.ic_favorite_border);
+            if (showToast) Toast.makeText(this, "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void toggleFavorite() {
-        isFavorite = !isFavorite;
-        if (isFavorite) {
-            btnFavorite.setImageResource(R.drawable.ic_favorite_filled);
-            Toast.makeText(this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
-            // TODO: Lưu vào database hoặc gọi API
-        } else {
-            btnFavorite.setImageResource(R.drawable.ic_favorite_border);
-            Toast.makeText(this, "Đã xóa khỏi yêu thích", Toast.LENGTH_SHORT).show();
-            // TODO: Xóa khỏi database hoặc gọi API
-        }
+        boolean newState = !isFavorite;
+        // Optimistic UI update
+        setFavoriteUI(newState, true);
+
+        if (currentBookId == null) return;
+
+        activityRepo.setFavorite(currentBookId, newState, new retrofit2.Callback<Void>() {
+            @Override
+            public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                if (!response.isSuccessful()) {
+                    // revert
+                    setFavoriteUI(!newState, true);
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                setFavoriteUI(!newState, true);
+            }
+        });
     }
 
     private void playAudiobook() {

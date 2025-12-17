@@ -9,6 +9,10 @@ public class Book {
     private String description;
     private String category;
 
+    // New fields to track user activity / display
+    private boolean isFavorite = false;
+    private float avgRating = 0f;
+
     // Constructor mặc định (cần thiết cho Firebase và Serialization)
     public Book() {
     }
@@ -28,4 +32,11 @@ public class Book {
     public String getAuthor() { return author; }
     public String getCoverUrl() { return coverUrl; }
     public String getDescription() { return description; }
+
+    // New getters/setters
+    public boolean isFavorite() { return isFavorite; }
+    public void setFavorite(boolean favorite) { isFavorite = favorite; }
+
+    public float getAvgRating() { return avgRating; }
+    public void setAvgRating(float avgRating) { this.avgRating = avgRating; }
 }

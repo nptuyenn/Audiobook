@@ -327,7 +327,14 @@ public class AccountActivity extends AppCompatActivity {
         // Xóa dữ liệu đăng nhập
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("is_logged_in", false);
+        // clear stored tokens and user info
+        editor.remove("refresh_token");
+        editor.remove("user_email");
+        editor.remove("user_name");
         editor.apply();
+
+        // Clear SessionManager token
+        com.example.audiobook_for_kids.auth.SessionManager.getInstance(this).clear();
 
         // Hiển thị thông báo
         Toast.makeText(this, "Đã đăng xuất thành công", Toast.LENGTH_SHORT).show();

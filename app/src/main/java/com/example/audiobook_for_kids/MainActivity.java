@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.audiobook_for_kids.repository.BookRepository;
+import com.example.audiobook_for_kids.repository.UserActivityRepository;
+import com.example.audiobook_for_kids.model.FavoriteBook;
 import androidx.lifecycle.Observer;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private AudiobookAdapter famousAuthorsAdapter;
 
     private BookRepository bookRepository;
+    private UserActivityRepository activityRepo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,15 +92,49 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Setup activity repo to sync favorite badges
+        activityRepo = UserActivityRepository.getInstance(this);
+        activityRepo.getFavoritesLive().observe(this, favs -> {
+            if (favs == null) return;
+            // When favorites arrive, mark books in current adapters
+            markFavoritesInAdapter(favs);
+        });
+
+        activityRepo.getError().observe(this, err -> {
+            // silent for unauthenticated; optional show
+            // if (err != null) Toast.makeText(this, err, Toast.LENGTH_SHORT).show();
+        });
+
         // Trigger initial load
         bookRepository.fetchBooks();
+        // Try to fetch favorites (if logged in)
+        activityRepo.fetchFavorites();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
-        bottomNav.setSelectedItemId(R.id.nav_home);
+    private void markFavoritesInAdapter(List<FavoriteBook> favs) {
+        // Helper to mark by id
+        java.util.Set<String> favIds = new java.util.HashSet<>();
+        for (FavoriteBook fb : favs) if (fb.getBookId() != null) favIds.add(fb.getBookId());
+
+        // update lists if they have data
+        updateBooksWithFavorites(featuredAdapter, favIds);
+        updateBooksWithFavorites(suggestionsAdapter, favIds);
+        updateBooksWithFavorites(quickPicksAdapter, favIds);
+        updateBooksWithFavorites(famousAuthorsAdapter, favIds);
+    }
+
+    private void updateBooksWithFavorites(AudiobookAdapter adapter, java.util.Set<String> favIds) {
+        try {
+            // Reflection: adapter holds List<Book> as a private field; instead, re-fetch from repository and update
+            List<Book> books = bookRepository.getBooksLiveData().getValue();
+            if (books == null) return;
+            for (Book b : books) {
+                b.setFavorite(b.getId() != null && favIds.contains(b.getId()));
+            }
+            adapter.setBooks(books);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void setupFeaturedRecycler() {

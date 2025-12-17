@@ -29,6 +29,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             tools:src="@tools:sample/avatars" />
 
+        <!-- Favorite overlay icon -->
+        <ImageView
+            android:id="@+id/iv_favorite_badge"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_margin="8dp"
+            android:visibility="gone"
+            android:src="@drawable/ic_favorite_filled"
+            app:tint="@color/ff6b6b"
+            app:layout_constraintTop_toTopOf="@id/iv_cover"
+            app:layout_constraintEnd_toEndOf="@id/iv_cover" />
+
         <!-- Title - Tên sách -->
         <TextView
             android:id="@+id/tv_title"
@@ -53,4 +65,3 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>
-

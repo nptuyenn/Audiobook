@@ -39,6 +39,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.audiobook_for_kids.adapter.ChapterAdapter;
 import com.example.audiobook_for_kids.model.AudioChapter;
 import com.example.audiobook_for_kids.repository.AudioRepository;
+import com.example.audiobook_for_kids.repository.UserActivityRepository;
 import java.util.ArrayList;
 
 public class PlayerActivity extends AppCompatActivity {
@@ -68,6 +69,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     // repository & adapter
     private AudioRepository audioRepository;
+    private UserActivityRepository activityRepo;
     private ArrayList<AudioChapter> chapters = new ArrayList<>();
 
     @Override
@@ -93,6 +95,11 @@ public class PlayerActivity extends AppCompatActivity {
                 chapters.clear();
                 chapters.addAll(list);
             }
+        });
+
+        activityRepo = UserActivityRepository.getInstance(this);
+        activityRepo.getError().observe(this, msg -> {
+            if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         });
 
         if (bookId != null && !bookId.isEmpty()) {
@@ -384,9 +391,22 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        // Send progress to backend when user leaves
+        if (bookId != null && mediaPlayer != null) {
+            int pos = mediaPlayer.getCurrentPosition();
+            // assume chapter 1 for now (improvement: track current chapter index)
+            activityRepo.updateProgress(bookId, 1, pos);
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mediaPlayer != null) {
+            // Send final progress
+            if (bookId != null) activityRepo.updateProgress(bookId, 1, mediaPlayer.getCurrentPosition());
             mediaPlayer.release();
             mediaPlayer = null;
         }
@@ -403,6 +423,9 @@ public class PlayerActivity extends AppCompatActivity {
             // When chapter selected: change media source and play
             try {
                 if (mediaPlayer != null) {
+                    // Save current progress before switching
+                    if (bookId != null) activityRepo.updateProgress(bookId, chapter.getChapter(), mediaPlayer.getCurrentPosition());
+
                     mediaPlayer.reset();
                     mediaPlayer.setDataSource(chapter.getAudioUrl());
                     mediaPlayer.prepareAsync();

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Toast;
+import android.content.SharedPreferences;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,6 +18,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import com.example.audiobook_for_kids.auth.SessionManager;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -137,6 +140,25 @@ public class LoginActivity extends AppCompatActivity {
                             //  Lưu token nếu cần
                             String accessToken = respJson.optString("accessToken", "");
                             String refreshToken = respJson.optString("refreshToken", "");
+
+                            // Save token into SessionManager so other repos can use it
+                            SessionManager.getInstance(LoginActivity.this).saveToken(accessToken);
+
+                            // Also save basic user info into SharedPreferences used by AccountActivity
+                            SharedPreferences prefs = getSharedPreferences("AudiobookPrefs", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putBoolean("is_logged_in", true);
+                            editor.putString("user_email", email);
+                            // Optionally set display name as email local part
+                            String displayName = email.contains("@") ? email.substring(0, email.indexOf("@")) : email;
+                            editor.putString("user_name", displayName);
+                            // store refresh token if useful
+                            editor.putString("refresh_token", refreshToken);
+                            editor.apply();
+
+                            // Clear previous repo errors and refresh favorites cache
+                            com.example.audiobook_for_kids.repository.UserActivityRepository.getInstance(LoginActivity.this).clearError();
+                            com.example.audiobook_for_kids.repository.UserActivityRepository.getInstance(LoginActivity.this).fetchFavorites();
 
                             Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);

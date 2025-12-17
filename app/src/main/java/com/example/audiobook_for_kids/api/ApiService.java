@@ -3,8 +3,15 @@ package com.example.audiobook_for_kids.api;
 
 import com.example.audiobook_for_kids.model.AudioChapter;
 import com.example.audiobook_for_kids.model.Book;
+import com.example.audiobook_for_kids.model.FavoriteBook;
+import com.example.audiobook_for_kids.model.requests.FavoriteRequest;
+import com.example.audiobook_for_kids.model.requests.ProgressRequest;
+import com.example.audiobook_for_kids.model.requests.ReviewRequest;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 import java.util.List;
 
@@ -14,4 +21,17 @@ public interface ApiService {
 
     @GET("audio/book/{bookId}")
     Call<List<AudioChapter>> getChapters(@Path("bookId") String bookId);
+
+    // User activity endpoints (require Authorization: Bearer <token>)
+    @GET("activity/favorites")
+    Call<List<FavoriteBook>> getFavorites(@Header("Authorization") String authHeader);
+
+    @POST("activity/favorites")
+    Call<Void> setFavorite(@Header("Authorization") String authHeader, @Body FavoriteRequest body);
+
+    @POST("activity/review")
+    Call<Void> submitReview(@Header("Authorization") String authHeader, @Body ReviewRequest body);
+
+    @POST("activity/progress")
+    Call<Void> updateProgress(@Header("Authorization") String authHeader, @Body ProgressRequest body);
 }
