@@ -331,10 +331,15 @@ public class AccountActivity extends AppCompatActivity {
         editor.remove("refresh_token");
         editor.remove("user_email");
         editor.remove("user_name");
+        // clear recent list as well
+        editor.remove("recent_books");
         editor.apply();
 
         // Clear SessionManager token
         com.example.audiobook_for_kids.auth.SessionManager.getInstance(this).clear();
+
+        // Notify activity repo to clear caches
+        com.example.audiobook_for_kids.repository.UserActivityRepository.getInstance(this).fetchFavorites();
 
         // Hiển thị thông báo
         Toast.makeText(this, "Đã đăng xuất thành công", Toast.LENGTH_SHORT).show();

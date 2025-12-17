@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.content.SharedPreferences;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private BookRepository bookRepository;
     private UserActivityRepository activityRepo;
 
+    private static final String PREF_NAME = "AudiobookPrefs";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
         setupTopicClickListeners();
 
         Button btn_login = findViewById(R.id.btn_login);
+
+        // hide login button when already logged in
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        boolean isLogged = prefs.getBoolean("is_logged_in", false);
+        btn_login.setVisibility(isLogged ? Button.GONE : Button.VISIBLE);
+
         btn_login.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
@@ -108,6 +117,19 @@ public class MainActivity extends AppCompatActivity {
         // Trigger initial load
         bookRepository.fetchBooks();
         // Try to fetch favorites (if logged in)
+        activityRepo.fetchFavorites();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // update login button visibility when returning to activity
+        Button btn_login = findViewById(R.id.btn_login);
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        boolean isLogged = prefs.getBoolean("is_logged_in", false);
+        btn_login.setVisibility(isLogged ? Button.GONE : Button.VISIBLE);
+
+        // refresh favorites
         activityRepo.fetchFavorites();
     }
 

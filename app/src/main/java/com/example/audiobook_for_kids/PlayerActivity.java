@@ -2,6 +2,7 @@ package com.example.audiobook_for_kids;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -41,6 +42,8 @@ import com.example.audiobook_for_kids.model.AudioChapter;
 import com.example.audiobook_for_kids.repository.AudioRepository;
 import com.example.audiobook_for_kids.repository.UserActivityRepository;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class PlayerActivity extends AppCompatActivity {
 
@@ -72,6 +75,11 @@ public class PlayerActivity extends AppCompatActivity {
     private UserActivityRepository activityRepo;
     private ArrayList<AudioChapter> chapters = new ArrayList<>();
 
+    private SharedPreferences prefs;
+    private static final String PREF_NAME = "AudiobookPrefs";
+    private static final String KEY_RECENT = "recent_books"; // comma separated
+    private static final int MAX_RECENT = 20;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +92,8 @@ public class PlayerActivity extends AppCompatActivity {
         loadDataFromIntent();
         setupMediaPlayer();
         setupClickListeners();
+
+        prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
 
         // Setup repository to fetch chapters for this book (if bookId provided)
         audioRepository = AudioRepository.getInstance();
@@ -338,6 +348,36 @@ public class PlayerActivity extends AppCompatActivity {
         isPlaying = true;
         btnPlayPause.setImageResource(R.drawable.ic_pause); // Đổi icon thành Pause
         handler.post(updateSeekBar);
+
+        // Save this book as recently played
+        if (bookId != null && !bookId.isEmpty()) {
+            addRecentBookId(bookId);
+        }
+    }
+
+    private void addRecentBookId(String id) {
+        String raw = prefs.getString(KEY_RECENT, "");
+        LinkedList<String> items = new LinkedList<>();
+        if (raw != null && !raw.trim().isEmpty()) {
+            String[] parts = raw.split(",");
+            for (String p : parts) {
+                String t = p.trim();
+                if (!t.isEmpty() && !t.equals(id)) items.add(t);
+            }
+        }
+        // add to front
+        items.addFirst(id);
+        // trim
+        while (items.size() > MAX_RECENT) items.removeLast();
+        // join
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (String s : items) {
+            if (!first) sb.append(",");
+            sb.append(s);
+            first = false;
+        }
+        prefs.edit().putString(KEY_RECENT, sb.toString()).apply();
     }
 
     private void pauseAudio() {
@@ -436,6 +476,9 @@ public class PlayerActivity extends AppCompatActivity {
                     });
                     // update displayed title/author if desired
                     tvPlayerTitle.setText(chapter.getTitle());
+
+                    // mark this book as recent when switching chapters
+                    if (bookId != null && !bookId.isEmpty()) addRecentBookId(bookId);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

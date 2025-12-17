@@ -1,6 +1,7 @@
 package com.example.audiobook_for_kids;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -8,10 +9,34 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 
+import com.example.audiobook_for_kids.adapter.AudiobookAdapter;
+import com.example.audiobook_for_kids.model.Book;
+import com.example.audiobook_for_kids.model.FavoriteBook;
+import com.example.audiobook_for_kids.repository.BookRepository;
+import com.example.audiobook_for_kids.repository.UserActivityRepository;
+
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class LibraryActivity extends AppCompatActivity {
 
     private TabLayout tabLayout;
     private RecyclerView rvLibrary;
+    private LinearLayout emptyState;
+
+    private AudiobookAdapter libraryAdapter;
+    private BookRepository bookRepository;
+    private UserActivityRepository activityRepo;
+
+    private SharedPreferences prefs;
+    private static final String PREF_NAME = "AudiobookPrefs";
+    private static final String KEY_RECENT = "recent_books"; // stored as comma-separated ids
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +46,9 @@ public class LibraryActivity extends AppCompatActivity {
         // Ánh xạ views
         tabLayout = findViewById(R.id.tab_layout);
         rvLibrary = findViewById(R.id.rv_library);
+        emptyState = findViewById(R.id.empty_state);
+
+        prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
 
         // Thiết lập RecyclerView
         setupRecyclerView();
@@ -30,6 +58,31 @@ public class LibraryActivity extends AppCompatActivity {
 
         // Xử lý Bottom Navigation
         setupBottomNavigation();
+
+        // Repos
+        bookRepository = BookRepository.getInstance();
+        activityRepo = UserActivityRepository.getInstance(this);
+
+        // Observe book list changes
+        bookRepository.getBooksLiveData().observe(this, books -> {
+            // refresh current tab content
+            int pos = tabLayout.getSelectedTabPosition();
+            loadLibraryData(pos);
+        });
+
+        // Observe favorites updates
+        activityRepo.getFavoritesLive().observe(this, favs -> {
+            // if currently on favorites tab, refresh
+            if (tabLayout.getSelectedTabPosition() == 2) loadLibraryData(2);
+        });
+
+        activityRepo.getError().observe(this, err -> {
+            if (err != null) Toast.makeText(this, err, Toast.LENGTH_SHORT).show();
+        });
+
+        // Trigger initial loads
+        bookRepository.fetchBooks();
+        activityRepo.fetchFavorites();
     }
 
     @Override
@@ -38,15 +91,21 @@ public class LibraryActivity extends AppCompatActivity {
         // Đảm bảo tab Library được chọn
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setSelectedItemId(R.id.nav_library);
+
+        // refresh current tab
+        int pos = tabLayout.getSelectedTabPosition();
+        loadLibraryData(pos);
     }
 
     private void setupRecyclerView() {
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         rvLibrary.setLayoutManager(layoutManager);
 
-        // TODO: Thiết lập adapter khi có dữ liệu
-        // LibraryAdapter adapter = new LibraryAdapter(this, libraryItems);
-        // rvLibrary.setAdapter(adapter);
+        libraryAdapter = new AudiobookAdapter(this, new ArrayList<>(), book -> {
+            // open detail
+            openBookDetail(book);
+        });
+        rvLibrary.setAdapter(libraryAdapter);
     }
 
     private void setupTabs() {
@@ -57,7 +116,6 @@ public class LibraryActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                // TODO: Lọc dữ liệu theo tab được chọn
                 loadLibraryData(tab.getPosition());
             }
 
@@ -72,8 +130,63 @@ public class LibraryActivity extends AppCompatActivity {
     }
 
     private void loadLibraryData(int tabPosition) {
-        // TODO: Load dữ liệu theo tab
-        // tabPosition: 0 = Đã lưu, 1 = Đã nghe, 2 = Yêu thích
+        List<Book> allBooks = bookRepository.getBooksLiveData().getValue();
+        if (allBooks == null) allBooks = new ArrayList<>();
+
+        List<Book> result = new ArrayList<>();
+
+        switch (tabPosition) {
+            case 0: // Saved - placeholder: currently empty
+                result.clear();
+                break;
+            case 1: // Recent (Đã nghe)
+                List<String> recentIds = getRecentIdsFromPrefs();
+                // preserve order of recentIds
+                for (String id : recentIds) {
+                    for (Book b : allBooks) {
+                        if (b.getId() != null && b.getId().equals(id)) {
+                            result.add(b);
+                            break;
+                        }
+                    }
+                }
+                break;
+            case 2: // Favorites
+                List<FavoriteBook> favs = activityRepo.getFavoritesLive().getValue();
+                if (favs != null) {
+                    Set<String> favIds = new HashSet<>();
+                    for (FavoriteBook fb : favs) if (fb.getBookId() != null) favIds.add(fb.getBookId());
+                    for (Book b : allBooks) {
+                        if (b.getId() != null && favIds.contains(b.getId())) {
+                            b.setFavorite(true);
+                            result.add(b);
+                        }
+                    }
+                }
+                break;
+        }
+
+        // Update UI
+        if (result.isEmpty()) {
+            emptyState.setVisibility(View.VISIBLE);
+            rvLibrary.setVisibility(View.GONE);
+        } else {
+            emptyState.setVisibility(View.GONE);
+            rvLibrary.setVisibility(View.VISIBLE);
+            libraryAdapter.setBooks(result);
+        }
+    }
+
+    private List<String> getRecentIdsFromPrefs() {
+        String raw = prefs.getString(KEY_RECENT, "");
+        List<String> ids = new ArrayList<>();
+        if (raw == null || raw.trim().isEmpty()) return ids;
+        String[] parts = raw.split(",");
+        for (String p : parts) {
+            String t = p.trim();
+            if (!t.isEmpty()) ids.add(t);
+        }
+        return ids;
     }
 
     private void setupBottomNavigation() {
@@ -109,5 +222,13 @@ public class LibraryActivity extends AppCompatActivity {
             return false;
         });
     }
-}
 
+    private void openBookDetail(Book book) {
+        Intent intent = new Intent(this, AudiobookDetailActivity.class);
+        intent.putExtra("book_id", book.getId());
+        intent.putExtra("book_title", book.getTitle());
+        intent.putExtra("book_author", book.getAuthor());
+        intent.putExtra("book_cover", book.getCoverUrl());
+        startActivity(intent);
+    }
+}

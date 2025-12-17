@@ -60,8 +60,13 @@ public class UserActivityRepository {
                 if (response.isSuccessful() && response.body() != null) {
                     favoritesLive.postValue(response.body());
                 } else {
-                    // only post error for server failure
-                    error.postValue("Không thể tải favorites: " + response.code());
+                    // If unauthenticated, clear favorites silently; otherwise show error
+                    int code = response.code();
+                    if (code == 401 || code == 403) {
+                        favoritesLive.postValue(null);
+                    } else {
+                        error.postValue("Không thể tải favorites: " + response.code());
+                    }
                 }
             }
 
@@ -87,7 +92,13 @@ public class UserActivityRepository {
                     // Refresh favorites list
                     fetchFavorites();
                 } else {
-                    error.postValue("Không thể cập nhật yêu thích: " + response.code());
+                    int code = response.code();
+                    if (code == 401 || code == 403) {
+                        // user not authenticated: clear favorites and don't spam UI
+                        favoritesLive.postValue(null);
+                    } else {
+                        error.postValue("Không thể cập nhật yêu thích: " + response.code());
+                    }
                 }
                 if (cb != null) cb.onResponse(call, response);
             }
@@ -111,7 +122,14 @@ public class UserActivityRepository {
         api.submitReview(auth, req).enqueue(cb != null ? cb : new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                // no-op
+                if (!response.isSuccessful()) {
+                    int code = response.code();
+                    if (code == 401 || code == 403) {
+                        // ignore unauthenticated
+                    } else {
+                        // no-op for success or other server messages
+                    }
+                }
             }
 
             @Override
