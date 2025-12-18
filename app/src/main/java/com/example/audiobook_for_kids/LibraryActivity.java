@@ -220,12 +220,7 @@ public class LibraryActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
                 return true;
-            } else if (itemId == R.id.nav_search) {
-                Intent intent = new Intent(LibraryActivity.this, SearchActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
-            } else if (itemId == R.id.nav_library) {
+            }  else if (itemId == R.id.nav_library) {
                 // Đã ở trang Thư viện
                 return true;
             } else if (itemId == R.id.nav_account) {

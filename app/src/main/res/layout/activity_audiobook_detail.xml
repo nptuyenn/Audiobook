@@ -177,7 +177,7 @@
             android:layout_marginTop="24dp"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
-            android:text="Mô tả"
+            android:text="Giới thiệu nội dung"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#333333" />
@@ -201,7 +201,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
-            android:text="Các tập"
+            android:text="Mục lục"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="#333333" />

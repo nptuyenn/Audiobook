@@ -322,17 +322,13 @@ public class TopicActivity extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
-            if (itemId == R.id.nav_search) {
-                Intent intent = new Intent(TopicActivity.this, SearchActivity.class);
+            if (itemId == R.id.nav_ai) {
+                Intent intent = new Intent(TopicActivity.this, AIStoryActivity.class);
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_home) {
                 Intent intent = new Intent(TopicActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.nav_ai) {
-                Intent intent = new Intent(TopicActivity.this, AIStoryActivity.class);
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_library) {

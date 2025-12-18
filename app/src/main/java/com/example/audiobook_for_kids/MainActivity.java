@@ -414,18 +414,15 @@ public class MainActivity extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
-            if (itemId == R.id.nav_search) {
-                Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+            if (itemId == R.id.nav_ai) {
+                Intent intent = new Intent(MainActivity.this, AIStoryActivity.class);
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_home) {
                 // Đã ở trang chủ
                 return true;
-            } else if (itemId == R.id.nav_ai) {
-                Intent intent = new Intent(MainActivity.this, AIStoryActivity.class);
-                startActivity(intent);
-                return true;
-            } else if (itemId == R.id.nav_library) {
+            }
+            else if (itemId == R.id.nav_library) {
                 Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
                 startActivity(intent);
                 return true;

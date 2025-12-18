@@ -97,12 +97,7 @@ public class AIStoryActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_ai) {
                 // Đã ở trang AI
                 return true;
-            } else if (itemId == R.id.nav_search) {
-                Intent intent = new Intent(AIStoryActivity.this, SearchActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
-            } else if (itemId == R.id.nav_library) {
+            }  else if (itemId == R.id.nav_library) {
                 Intent intent = new Intent(AIStoryActivity.this, LibraryActivity.class);
                 startActivity(intent);
                 finish();

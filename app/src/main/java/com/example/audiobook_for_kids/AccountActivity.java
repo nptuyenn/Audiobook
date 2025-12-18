@@ -404,12 +404,8 @@ public class AccountActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
                 return true;
-            } else if (itemId == R.id.nav_search) {
-                Intent intent = new Intent(AccountActivity.this, SearchActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
-            } else if (itemId == R.id.nav_ai) {
+            }
+            else if (itemId == R.id.nav_ai) {
                 Intent intent = new Intent(AccountActivity.this, AIStoryActivity.class);
                 startActivity(intent);
                 finish();
