@@ -7,9 +7,13 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.content.SharedPreferences;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.ImageButton;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.cardview.widget.CardView;
 
 import com.example.audiobook_for_kids.adapter.AudiobookAdapter;
 import com.example.audiobook_for_kids.model.Book;
@@ -21,7 +25,9 @@ import java.util.List;
 import com.example.audiobook_for_kids.repository.BookRepository;
 import com.example.audiobook_for_kids.repository.UserActivityRepository;
 import com.example.audiobook_for_kids.model.FavoriteBook;
+import com.example.audiobook_for_kids.service.AudioPlaybackManager;
 import androidx.lifecycle.Observer;
+import com.bumptech.glide.Glide;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,6 +44,14 @@ public class MainActivity extends AppCompatActivity {
 
     private BookRepository bookRepository;
     private UserActivityRepository activityRepo;
+
+    // Mini player views
+    private CardView layoutMiniPlayer;
+    private ImageView ivMiniCover;
+    private TextView tvMiniTitle, tvMiniAuthor;
+    private ImageButton btnMiniPlay;
+
+    private AudioPlaybackManager audioManager;
 
     private static final String PREF_NAME = "AudiobookPrefs";
 
@@ -100,6 +114,9 @@ public class MainActivity extends AppCompatActivity {
                 famousAuthorsAdapter.setBooks(books);
             }
         });
+
+        // Setup mini player
+        setupMiniPlayer();
 
         // Setup activity repo to sync favorite badges
         activityRepo = UserActivityRepository.getInstance(this);
@@ -186,56 +203,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private List<Book> getMockFeaturedBooks() {
-        List<Book> books = new ArrayList<>();
 
-        books.add(new Book(
-            "mock_1",
-            "Cô Bé Quàng Khăn Đỏ",
-            "Grimm Brothers",
-            "https://picsum.photos/seed/red-riding-hood/300/400",
-            "Câu chuyện cổ tích nổi tiếng về cô bé áo choàng đỏ và chú sói xấu xa",
-            "co_tich"
-        ));
-
-        books.add(new Book(
-            "mock_2",
-            "Ba Chú Heo Con",
-            "Joseph Jacobs",
-            "https://picsum.photos/seed/three-pigs/300/400",
-            "Ba chú heo xây nhà và cuộc chạm trán với chú sói hung dữ",
-            "co_tich"
-        ));
-
-        books.add(new Book(
-            "mock_3",
-            "Nàng Bạch Tuyết",
-            "Grimm Brothers",
-            "https://picsum.photos/seed/snow-white/300/400",
-            "Câu chuyện về nàng công chúa đẹp nhất và bảy chú lùn",
-            "co_tich"
-        ));
-
-        books.add(new Book(
-            "mock_4",
-            "Cô Bé Lọ Lem",
-            "Charles Perrault",
-            "https://picsum.photos/seed/cinderella/300/400",
-            "Câu chuyện cổ tích lãng mạn về cô bé lọ lem và hoàng tử",
-            "co_tich"
-        ));
-
-        books.add(new Book(
-            "mock_5",
-            "Pinocchio",
-            "Carlo Collodi",
-            "https://picsum.photos/seed/pinocchio/300/400",
-            "Chú bé người gỗ và hành trình trở thành người thật",
-            "nuoc_ngoai"
-        ));
-
-        return books;
-    }
 
 
     private List<Book> getMockSuggestionBooks() {
@@ -497,5 +465,83 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Không thể mở chủ đề", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void setupMiniPlayer() {
+        // Initialize views
+        layoutMiniPlayer = findViewById(R.id.layout_mini_player);
+        ivMiniCover = findViewById(R.id.iv_mini_cover);
+        tvMiniTitle = findViewById(R.id.tv_mini_title);
+        tvMiniAuthor = findViewById(R.id.tv_mini_author);
+        btnMiniPlay = findViewById(R.id.btn_mini_play);
+
+        // Initialize audio manager
+        audioManager = AudioPlaybackManager.getInstance();
+        audioManager.initialize(this);
+
+        // Observe audio manager state
+        audioManager.getShouldShowMiniPlayer().observe(this, shouldShow -> {
+            if (shouldShow != null) {
+                layoutMiniPlayer.setVisibility(shouldShow ? CardView.VISIBLE : CardView.GONE);
+            }
+        });
+
+        audioManager.getCurrentTitle().observe(this, title -> {
+            if (title != null) {
+                tvMiniTitle.setText(title);
+            }
+        });
+
+        audioManager.getCurrentAuthor().observe(this, author -> {
+            if (author != null) {
+                tvMiniAuthor.setText(author);
+            }
+        });
+
+        audioManager.getCurrentCover().observe(this, coverUrl -> {
+            if (coverUrl != null && !coverUrl.isEmpty()) {
+                Glide.with(this)
+                        .load(coverUrl)
+                        .placeholder(R.drawable.ic_headphone_placeholder)
+                        .error(R.drawable.ic_headphone_placeholder)
+                        .into(ivMiniCover);
+            }
+        });
+
+        audioManager.getIsPlaying().observe(this, isPlaying -> {
+            if (isPlaying != null) {
+                btnMiniPlay.setImageResource(isPlaying ?
+                    R.drawable.ic_pause : R.drawable.ic_play_arrow);
+            }
+        });
+
+        // Set click listeners
+        btnMiniPlay.setOnClickListener(v -> {
+            Boolean playing = audioManager.getIsPlaying().getValue();
+            if (playing != null && playing) {
+                audioManager.pause();
+            } else {
+                audioManager.play();
+            }
+        });
+
+        layoutMiniPlayer.setOnClickListener(v -> {
+            // Open PlayerActivity with current playing book
+            String bookId = audioManager.getCurrentBookId().getValue();
+            String title = audioManager.getCurrentTitle().getValue();
+            String author = audioManager.getCurrentAuthor().getValue();
+            String cover = audioManager.getCurrentCover().getValue();
+
+            if (bookId != null && !bookId.isEmpty()) {
+                Intent intent = new Intent(this, PlayerActivity.class);
+                intent.putExtra("book_id", bookId);
+                intent.putExtra("book_title", title);
+                intent.putExtra("book_author", author);
+                intent.putExtra("book_cover", cover);
+                intent.putExtra("from_mini_player", true);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation);
+            }
+        });
     }
 }

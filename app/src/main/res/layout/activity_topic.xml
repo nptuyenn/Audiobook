@@ -121,8 +121,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
+
+                android:paddingTop="8dp"
+                android:paddingBottom="88dp"
+
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+
                 tools:listitem="@layout/item_audiobook" />
 
             <LinearLayout
@@ -180,4 +185,12 @@
         app:itemTextColor="@color/bottom_nav_color_selector"
         app:menu="@menu/bottom_nav_menu" />
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="80dp">
+        <include layout="@layout/layout_mini_player" />
+
+    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

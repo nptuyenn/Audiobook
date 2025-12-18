@@ -1,4 +1,3 @@
-// File: adapter/AudiobookAdapter.java
 package com.example.audiobook_for_kids.adapter;
 
 import android.content.Context;
@@ -31,7 +30,10 @@ public class AudiobookAdapter extends RecyclerView.Adapter<AudiobookAdapter.View
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_audiobook, parent, false);
+        // --- SỬA ĐỔI QUAN TRỌNG TẠI ĐÂY ---
+        // Sử dụng layout 'item_audiobook_home' để có kích thước nhỏ gọn (150dp)
+        // thay vì 'item_audiobook' (match_parent)
+        View view = LayoutInflater.from(context).inflate(R.layout.item_audiobook_home, parent, false);
         return new ViewHolder(view);
     }
 
@@ -44,18 +46,21 @@ public class AudiobookAdapter extends RecyclerView.Adapter<AudiobookAdapter.View
 
         // Load ảnh bìa với Glide
         Glide.with(context)
-            .load(book.getCoverUrl())
-            .placeholder(R.color.teal_200) // Màu tạm khi đang load
-            .error(R.color.black)          // Màu khi lỗi
-            .centerCrop()
-            .into(holder.ivCover);
+                .load(book.getCoverUrl())
+                .placeholder(R.color.teal_200)
+                .error(R.color.black)
+                .centerCrop()
+                .into(holder.ivCover);
 
-        // Show favorite badge if marked
-        if (book.isFavorite()) {
-            holder.ivFavBadge.setVisibility(View.VISIBLE);
-        } else {
-            holder.ivFavBadge.setVisibility(View.GONE);
-        }
+        /* LƯU Ý: Đã tạm ẩn phần badge yêu thích để tránh lỗi Crash
+         vì file XML item_audiobook_home chưa có id iv_favorite_badge.
+         Nếu bạn đã thêm icon đó vào XML thì có thể mở lại code này.
+        */
+        // if (book.isFavorite()) {
+        //     holder.ivFavBadge.setVisibility(View.VISIBLE);
+        // } else {
+        //     holder.ivFavBadge.setVisibility(View.GONE);
+        // }
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -77,13 +82,14 @@ public class AudiobookAdapter extends RecyclerView.Adapter<AudiobookAdapter.View
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivCover;
         TextView tvTitle;
-        ImageView ivFavBadge;
+        // ImageView ivFavBadge; // Tạm ẩn
 
         ViewHolder(View itemView) {
             super(itemView);
             ivCover = itemView.findViewById(R.id.iv_cover);
             tvTitle = itemView.findViewById(R.id.tv_title);
-            ivFavBadge = itemView.findViewById(R.id.iv_favorite_badge);
+
+            // ivFavBadge = itemView.findViewById(R.id.iv_favorite_badge); // Tạm ẩn
         }
     }
 }

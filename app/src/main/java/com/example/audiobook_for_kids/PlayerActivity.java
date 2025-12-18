@@ -1,5 +1,4 @@
 package com.example.audiobook_for_kids;
-
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,6 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,6 +42,7 @@ import com.example.audiobook_for_kids.adapter.ChapterAdapter;
 import com.example.audiobook_for_kids.model.AudioChapter;
 import com.example.audiobook_for_kids.repository.AudioRepository;
 import com.example.audiobook_for_kids.repository.UserActivityRepository;
+import com.example.audiobook_for_kids.service.AudioPlaybackManager;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,11 +71,15 @@ public class PlayerActivity extends AppCompatActivity {
     // audio url from intent
     private String audioUrl = null;
     private String bookId = null;
+    private boolean shouldAutoPlay = false;
 
     // repository & adapter
     private AudioRepository audioRepository;
     private UserActivityRepository activityRepo;
     private ArrayList<AudioChapter> chapters = new ArrayList<>();
+    private AudioPlaybackManager audioManager;
+    private boolean isFromMiniPlayer = false;
+    private boolean isUserDragging = false;
 
     private SharedPreferences prefs;
     private static final String PREF_NAME = "AudiobookPrefs";
@@ -88,7 +94,11 @@ public class PlayerActivity extends AppCompatActivity {
         defaultBackgroundColor = Color.parseColor("#FFFDF5");
 
         initViews();
+
+        audioManager = AudioPlaybackManager.getInstance();
+        audioManager.initialize(getApplicationContext());
         // LƯU Ý: load intent trước khi khởi tạo MediaPlayer để có thể dùng audioUrl
+
         loadDataFromIntent();
         setupMediaPlayer();
         setupClickListeners();
@@ -114,6 +124,22 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (bookId != null && !bookId.isEmpty()) {
             audioRepository.fetchChapters(bookId);
+        }
+
+        // Initialize AudioPlaybackManager
+        audioManager = AudioPlaybackManager.getInstance();
+        audioManager.initialize(this);
+
+        if (isFromMiniPlayer && audioManager.hasActivePlayback()) {
+            syncWithAudioManager();
+            shouldAutoPlay = false;
+        } else {
+            if (audioManager.hasActivePlayback()) {
+                // Chỉ stop nếu đang KHÔNG phải từ mini player
+                if (!isFromMiniPlayer) {
+                    audioManager.stop();
+                }
+            }
         }
     }
 
@@ -143,9 +169,29 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void setupMediaPlayer() {
+
+        // If opened from mini player and AudioManager has active playback, don't create new MediaPlayer
+        if (isFromMiniPlayer && audioManager.hasActivePlayback()) {
+            return;
+        }
+
         mediaPlayer = new MediaPlayer();
 
         try {
+            // Set audio attributes for better audio playback
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build();
+                mediaPlayer.setAudioAttributes(audioAttributes);
+            } else {
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            }
+
+            // Set volume to maximum for clear audio
+            mediaPlayer.setVolume(1.0f, 1.0f);
+
             String source = audioUrl != null && !audioUrl.isEmpty() ? audioUrl : "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
             mediaPlayer.setDataSource(source);
             mediaPlayer.prepareAsync();
@@ -153,8 +199,13 @@ public class PlayerActivity extends AppCompatActivity {
             mediaPlayer.setOnPreparedListener(mp -> {
                 tvTotalTime.setText(formatTime(mp.getDuration()));
                 sbProgress.setMax(mp.getDuration());
-                // Tự động phát khi load xong (tùy chọn)
-                // playAudio();
+
+                // Auto-play nếu được yêu cầu từ detail page
+                if (shouldAutoPlay) {
+                    playAudio();
+                    shouldAutoPlay = false; // Reset flag sau khi auto-play
+                } else {
+                }
             });
 
             mediaPlayer.setOnCompletionListener(mp -> {
@@ -180,6 +231,37 @@ public class PlayerActivity extends AppCompatActivity {
         };
     }
 
+
+
+    private boolean isUserDraggingSeekBar() {
+        return isUserDragging;
+    }
+
+    private void setupAudioManagerProgressUpdater() {
+        updateSeekBar = new Runnable() {
+            @Override
+            public void run() {
+                if (audioManager.hasActivePlayback() && isFromMiniPlayer) {
+                    Boolean playing = audioManager.getIsPlaying().getValue();
+                    if (playing != null && playing) {
+                        int currentPos = audioManager.getCurrentPositionValue();
+                        if (!isUserDragging) {
+                            sbProgress.setProgress(currentPos);
+                            tvCurrentTime.setText(formatTime(currentPos));
+                        }
+                        handler.postDelayed(this, 1000);
+                    }
+                }
+            }
+        };
+
+        // Always start the updater if there's active playback and we're from mini player
+        if (audioManager.hasActivePlayback() && isFromMiniPlayer) {
+            handler.removeCallbacks(updateSeekBar);
+            handler.post(updateSeekBar);
+        }
+    }
+
     private void loadDataFromIntent() {
         Intent intent = getIntent();
 
@@ -197,6 +279,12 @@ public class PlayerActivity extends AppCompatActivity {
         if (passedBookId != null) {
             bookId = passedBookId;
         }
+
+        // Check if opened from mini player
+        isFromMiniPlayer = intent.getBooleanExtra("from_mini_player", false);
+
+        // Check if should auto-play (từ detail page)
+        shouldAutoPlay = intent.getBooleanExtra("auto_play", false);
 
         tvPlayerTitle.setText(title != null ? title : "Đang tải...");
         tvPlayerAuthor.setText(author != null ? author : "KidoBook");
@@ -282,24 +370,43 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         btnCollapse.setOnClickListener(v -> {
+            // Nếu đang dùng Player cục bộ (không phải MiniPlayer) thì chuyển giao
+            if (!isFromMiniPlayer && mediaPlayer != null) {
+                transferToAudioManager();
+            }
+            // Nếu đang là MiniPlayer thì chỉ cần hiện lại MiniPlayer bên dưới
+            else if (isFromMiniPlayer) {
+                audioManager.showMiniPlayer();
+            }
+
             finish();
-            // Hiệu ứng: trang cũ giữ nguyên, PlayerActivity trượt xuống
             overridePendingTransition(R.anim.no_animation, R.anim.slide_out_down);
         });
 
         // Xử lý Play/Pause
         btnPlayPause.setOnClickListener(v -> {
-            if (mediaPlayer == null) return;
-            if (isPlaying) {
-                pauseAudio();
-            } else {
-                playAudio();
+            if (isFromMiniPlayer && audioManager.hasActivePlayback()) {
+                if (isPlaying) {
+                    audioManager.pause();
+                } else {
+                    audioManager.play();
+                }
+            } else if (mediaPlayer != null) {
+                if (isPlaying) {
+                    pauseAudio();
+                } else {
+                    playAudio();
+                }
             }
         });
 
         // Xử lý Tua lại 10s
         btnReplay10.setOnClickListener(v -> {
-            if (mediaPlayer != null) {
+            if (isFromMiniPlayer && audioManager.hasActivePlayback()) {
+                int current = audioManager.getCurrentPositionValue();
+                audioManager.seekTo(Math.max(0, current - 10000));
+                updateUIImmediate();
+            } else if (mediaPlayer != null) {
                 int current = mediaPlayer.getCurrentPosition();
                 mediaPlayer.seekTo(Math.max(0, current - 10000));
                 updateUIImmediate();
@@ -308,7 +415,12 @@ public class PlayerActivity extends AppCompatActivity {
 
         // Xử lý Tua đi 10s
         btnForward10.setOnClickListener(v -> {
-            if (mediaPlayer != null) {
+            if (isFromMiniPlayer && audioManager.hasActivePlayback()) {
+                int current = audioManager.getCurrentPositionValue();
+                int duration = audioManager.getDurationValue();
+                audioManager.seekTo(Math.min(duration, current + 10000));
+                updateUIImmediate();
+            } else if (mediaPlayer != null) {
                 int current = mediaPlayer.getCurrentPosition();
                 mediaPlayer.seekTo(Math.min(mediaPlayer.getDuration(), current + 10000));
                 updateUIImmediate();
@@ -325,11 +437,16 @@ public class PlayerActivity extends AppCompatActivity {
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+                isUserDragging = true;
                 handler.removeCallbacks(updateSeekBar); // Ngừng update khi đang kéo
             }
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (mediaPlayer != null) {
+                isUserDragging = false;
+                // Handle seeking for both local MediaPlayer and AudioPlaybackManager
+                if (isFromMiniPlayer && audioManager.hasActivePlayback()) {
+                    audioManager.seekTo(seekBar.getProgress());
+                } else if (mediaPlayer != null) {
                     mediaPlayer.seekTo(seekBar.getProgress());
                 }
                 if (isPlaying) handler.post(updateSeekBar); // Tiếp tục update
@@ -388,7 +505,11 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void updateUIImmediate() {
-        if (mediaPlayer != null) {
+        if (isFromMiniPlayer && audioManager.hasActivePlayback()) {
+            int currentPos = audioManager.getCurrentPositionValue();
+            sbProgress.setProgress(currentPos);
+            tvCurrentTime.setText(formatTime(currentPos));
+        } else if (mediaPlayer != null) {
             sbProgress.setProgress(mediaPlayer.getCurrentPosition());
             tvCurrentTime.setText(formatTime(mediaPlayer.getCurrentPosition()));
         }
@@ -433,20 +554,21 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+
         // Send progress to backend when user leaves
-        if (bookId != null && mediaPlayer != null) {
-            int pos = mediaPlayer.getCurrentPosition();
-            // assume chapter 1 for now (improvement: track current chapter index)
-            activityRepo.updateProgress(bookId, 1, pos);
+        if (mediaPlayer != null && bookId != null) {
+            activityRepo.updateProgress(bookId, 1, mediaPlayer.getCurrentPosition());
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Send final progress only if we still have media player (not transferred)
         if (mediaPlayer != null) {
-            // Send final progress
-            if (bookId != null) activityRepo.updateProgress(bookId, 1, mediaPlayer.getCurrentPosition());
+            if (bookId != null) {
+                activityRepo.updateProgress(bookId, 1, mediaPlayer.getCurrentPosition());
+            }
             mediaPlayer.release();
             mediaPlayer = null;
         }
@@ -492,4 +614,106 @@ public class PlayerActivity extends AppCompatActivity {
         dialog.setContentView(sheet);
         dialog.show();
     }
+
+    private void transferToAudioManager() {
+        try {
+            if (mediaPlayer != null && audioUrl != null && !audioUrl.isEmpty()) {
+
+                int currentPos = mediaPlayer.getCurrentPosition();
+                boolean isPlayingLocal = mediaPlayer.isPlaying(); // Kiểm tra xem đang phát hay đang dừng
+
+                String title = tvPlayerTitle.getText().toString();
+                String author = tvPlayerAuthor.getText().toString();
+                String cover = getIntent().getStringExtra("book_cover"); // Hoặc biến toàn cục nếu có
+
+                android.util.Log.d("PlayerActivity", "Handoff: Pos=" + currentPos + " Playing=" + isPlayingLocal);
+
+                // 2. Gửi sang Manager
+                audioManager.setStartPosition(currentPos);
+
+                audioManager.setAudioSource(audioUrl, title, author, cover, bookId);
+
+                mediaPlayer.release();
+                mediaPlayer = null;
+
+                handler.removeCallbacks(updateSeekBar);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void syncWithAudioManager() {
+
+        // Hide mini player since we're showing the full player
+        audioManager.hideMiniPlayer();
+
+        // Get current state from AudioPlaybackManager
+        Boolean playingState = audioManager.getIsPlaying().getValue();
+        Integer currentPos = audioManager.getCurrentPosition().getValue();
+        Integer duration = audioManager.getDuration().getValue();
+
+        if (playingState != null) {
+            this.isPlaying = playingState;
+            btnPlayPause.setImageResource(playingState ? R.drawable.ic_pause : R.drawable.ic_play_arrow);
+        }
+
+        // Always use direct values for immediate sync
+        if (audioManager.hasActivePlayback()) {
+            int dur = audioManager.getDurationValue();
+            int pos = audioManager.getCurrentPositionValue();
+            if (dur > 0) {
+                sbProgress.setMax(dur);
+                sbProgress.setProgress(pos);
+                tvCurrentTime.setText(formatTime(pos));
+                tvTotalTime.setText(formatTime(dur));
+            }
+        }
+
+        // Fallback to LiveData values if direct values didn't work
+        if (currentPos != null && duration != null && duration > 0) {
+            sbProgress.setMax(duration);
+            sbProgress.setProgress(currentPos);
+            tvCurrentTime.setText(formatTime(currentPos));
+            tvTotalTime.setText(formatTime(duration));
+        }
+
+        // Set up observers for continuous updates
+        setupAudioManagerObservers();
+    }
+
+    private void setupAudioManagerObservers() {
+        // Observe AudioPlaybackManager state for real-time UI updates
+        audioManager.getIsPlaying().observe(this, playing -> {
+            if (playing != null && isFromMiniPlayer) {
+                this.isPlaying = playing;
+                btnPlayPause.setImageResource(playing ? R.drawable.ic_pause : R.drawable.ic_play_arrow);
+
+                // Always restart progress updater when state changes
+                handler.removeCallbacks(updateSeekBar);
+                if (audioManager.hasActivePlayback()) {
+                    handler.post(updateSeekBar);
+                }
+            }
+        });
+
+        audioManager.getCurrentPosition().observe(this, position -> {
+            if (position != null && isFromMiniPlayer && !isUserDraggingSeekBar()) {
+                sbProgress.setProgress(position);
+                tvCurrentTime.setText(formatTime(position));
+            }
+        });
+
+        audioManager.getDuration().observe(this, duration -> {
+            if (duration != null && duration > 0 && isFromMiniPlayer) {
+                sbProgress.setMax(duration);
+                tvTotalTime.setText(formatTime(duration));
+            }
+        });
+
+        // Start progress updates immediately if there's active playback
+        setupAudioManagerProgressUpdater();
+    }
+
+
 }

@@ -10,9 +10,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.audiobook_for_kids.service.AudioPlaybackManager;
+import com.bumptech.glide.Glide;
 
 public class AIStoryActivity extends AppCompatActivity {
 
@@ -22,6 +25,13 @@ public class AIStoryActivity extends AppCompatActivity {
     private CardView cardResult;
     private TextView tvStoryTitle;
     private TextView tvStoryContent;
+
+    // Mini player views
+    private CardView layoutMiniPlayer;
+    private ImageView ivMiniCover;
+    private TextView tvMiniTitle, tvMiniAuthor;
+    private ImageButton btnMiniPlay;
+    private AudioPlaybackManager audioManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +79,9 @@ public class AIStoryActivity extends AppCompatActivity {
 
         // Xử lý Bottom Navigation
         setupBottomNavigation();
+
+        // Setup mini player
+        setupMiniPlayer();
     }
 
     private void setupBottomNavigation() {
@@ -150,5 +163,83 @@ public class AIStoryActivity extends AppCompatActivity {
         // TODO: Lưu truyện vào database hoặc shared preferences
         // Hiển thị thông báo đã lưu
         android.widget.Toast.makeText(this, "Đã lưu truyện!", android.widget.Toast.LENGTH_SHORT).show();
+    }
+
+    private void setupMiniPlayer() {
+        // Initialize views
+        layoutMiniPlayer = findViewById(R.id.layout_mini_player);
+        ivMiniCover = findViewById(R.id.iv_mini_cover);
+        tvMiniTitle = findViewById(R.id.tv_mini_title);
+        tvMiniAuthor = findViewById(R.id.tv_mini_author);
+        btnMiniPlay = findViewById(R.id.btn_mini_play);
+
+        // Initialize audio manager
+        audioManager = AudioPlaybackManager.getInstance();
+        audioManager.initialize(this);
+
+        // Observe audio manager state
+        audioManager.getShouldShowMiniPlayer().observe(this, shouldShow -> {
+            if (shouldShow != null) {
+                layoutMiniPlayer.setVisibility(shouldShow ? CardView.VISIBLE : CardView.GONE);
+            }
+        });
+
+        audioManager.getCurrentTitle().observe(this, title -> {
+            if (title != null) {
+                tvMiniTitle.setText(title);
+            }
+        });
+
+        audioManager.getCurrentAuthor().observe(this, author -> {
+            if (author != null) {
+                tvMiniAuthor.setText(author);
+            }
+        });
+
+        audioManager.getCurrentCover().observe(this, coverUrl -> {
+            if (coverUrl != null && !coverUrl.isEmpty()) {
+                Glide.with(this)
+                        .load(coverUrl)
+                        .placeholder(R.drawable.ic_headphone_placeholder)
+                        .error(R.drawable.ic_headphone_placeholder)
+                        .into(ivMiniCover);
+            }
+        });
+
+        audioManager.getIsPlaying().observe(this, isPlaying -> {
+            if (isPlaying != null) {
+                btnMiniPlay.setImageResource(isPlaying ?
+                    R.drawable.ic_pause : R.drawable.ic_play_arrow);
+            }
+        });
+
+        // Set click listeners
+        btnMiniPlay.setOnClickListener(v -> {
+            Boolean playing = audioManager.getIsPlaying().getValue();
+            if (playing != null && playing) {
+                audioManager.pause();
+            } else {
+                audioManager.play();
+            }
+        });
+
+        layoutMiniPlayer.setOnClickListener(v -> {
+            // Open PlayerActivity with current playing book
+            String bookId = audioManager.getCurrentBookId().getValue();
+            String title = audioManager.getCurrentTitle().getValue();
+            String author = audioManager.getCurrentAuthor().getValue();
+            String cover = audioManager.getCurrentCover().getValue();
+
+            if (bookId != null && !bookId.isEmpty()) {
+                Intent intent = new Intent(this, PlayerActivity.class);
+                intent.putExtra("book_id", bookId);
+                intent.putExtra("book_title", title);
+                intent.putExtra("book_author", author);
+                intent.putExtra("book_cover", cover);
+                intent.putExtra("from_mini_player", true);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation);
+            }
+        });
     }
 }

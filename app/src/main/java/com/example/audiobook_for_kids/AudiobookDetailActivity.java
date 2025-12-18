@@ -135,10 +135,10 @@ public class AudiobookDetailActivity extends AppCompatActivity {
                 tvDescription.setText(bookDescription);
             } else {
                 tvDescription.setText(
-                    "Alice tình cờ đuổi theo một chú thỏ trắng biết nói và rơi vào Xứ Sở Thần Tiên, nơi cô trải qua hàng loạt cuộc phiêu lưu kỳ quái: " +
-                            "lúc to lúc nhỏ, gặp mèo Cheshire bí ẩn, tiệc trà điên loạn và Nữ Hoàng Đỏ thích ra lệnh chém đầu. " +
-                            "Sau khi bị cuốn vào một phiên tòa hỗn loạn, Alice bất ngờ tỉnh dậy và nhận ra tất cả chỉ là một giấc mơ lạ lùng.\n\n" +
-                            "Bài học: Câu chuyện nhắc ta hãy giữ sự tò mò và bản sắc riêng của mình trong một thế giới đầy điều vô lý và biến đổi."
+                        "Alice tình cờ đuổi theo một chú thỏ trắng biết nói và rơi vào Xứ Sở Thần Tiên, nơi cô trải qua hàng loạt cuộc phiêu lưu kỳ quái: " +
+                                "lúc to lúc nhỏ, gặp mèo Cheshire bí ẩn, tiệc trà điên loạn và Nữ Hoàng Đỏ thích ra lệnh chém đầu. " +
+                                "Sau khi bị cuốn vào một phiên tòa hỗn loạn, Alice bất ngờ tỉnh dậy và nhận ra tất cả chỉ là một giấc mơ lạ lùng.\n\n" +
+                                "Bài học: Câu chuyện nhắc ta hãy giữ sự tò mò và bản sắc riêng của mình trong một thế giới đầy điều vô lý và biến đổi."
                 );
             }
 
@@ -288,6 +288,8 @@ public class AudiobookDetailActivity extends AppCompatActivity {
                 intent.putExtra("book_cover", "");
                 intent.putExtra("book_id", "1");
             }
+
+            intent.putExtra("auto_play", true);
 
             // Nếu đã tải danh sách chương, truyền audio_url của chương đầu tiên để tự động phát
             if (currentChapters != null && !currentChapters.isEmpty()) {

@@ -419,7 +419,6 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
@@ -432,7 +431,17 @@
         app:labelVisibilityMode="labeled"
         app:itemIconTint="@color/bottom_nav_color_selector"
         app:itemTextColor="@color/bottom_nav_color_selector"
-
         app:menu="@menu/bottom_nav_menu" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="100dp"
+        android:elevation="6dp">
+        <include layout="@layout/layout_mini_player" />
+    </FrameLayout>
+
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
