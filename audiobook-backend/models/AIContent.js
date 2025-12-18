@@ -8,4 +8,4 @@ const aiContentSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.model("AIContent", aiContentSchema);
+export default mongoose.models.AIContent || mongoose.model("AIContent", aiContentSchema);
