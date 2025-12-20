@@ -2,6 +2,9 @@
 package com.example.audiobook_for_kids.utils;
 
 public class Constants {
-    public static final String BASE_URL = "http://10.0.2.2:5000/"; // Emulator
-    // Nếu dùng máy thật: "http://192.168.x.x:5000/"
+    public static final boolean IS_EMULATOR = false;
+
+    public static final String BASE_URL = IS_EMULATOR
+            ? "http://10.0.2.2:5000/"
+            : "https://advised-emmett-biogenetically.ngrok-free.dev/";
 }

@@ -1,6 +1,7 @@
 // File: api/ApiClient.java
 package com.example.audiobook_for_kids.api;
 
+import com.example.audiobook_for_kids.utils.Constants;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -9,7 +10,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://10.0.2.2:5000/"; // update if backend runs elsewhere
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {
@@ -24,7 +24,7 @@ public class ApiClient {
                     .build();
 
             retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
+                    .baseUrl(Constants.BASE_URL)
                     .client(client)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();

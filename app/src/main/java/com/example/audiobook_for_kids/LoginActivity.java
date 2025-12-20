@@ -20,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import com.example.audiobook_for_kids.auth.SessionManager;
+import com.example.audiobook_for_kids.utils.Constants;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -87,7 +88,8 @@ public class LoginActivity extends AppCompatActivity {
 
         new Thread(() -> {
             try {
-                URL url = new URL("http://10.0.2.2:5000/auth/signin");
+                // Sử dụng Constants.BASE_URL thay vì link cứng
+                URL url = new URL(Constants.BASE_URL + "auth/signin");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true); // ĐẶT TRƯỚC headers

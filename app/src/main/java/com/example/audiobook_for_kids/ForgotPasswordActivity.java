@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.audiobook_for_kids.utils.Constants;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONObject;
@@ -52,7 +53,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         new Thread(() -> {
             try {
-                URL url = new URL("http://10.0.2.2:5000/auth/forgot-password");
+                URL url = new URL(Constants.BASE_URL + "auth/forgot-password");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setDoOutput(true);
