@@ -16,7 +16,8 @@ import aiRoutes from "./routes/ai.js";
 const app = express();
 
 // Middleware
-app.use
+app.use(express.json());
+app.set('trust proxy', 1);
 app.use(cors({
   origin: "*", 
   credentials: true
@@ -65,8 +66,8 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   await connectDB();
-  app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${PORT}`);
     console.log('AI env -> GOOGLE_API_KEY:', !!process.env.GOOGLE_API_KEY, 'GEMINI_KEY:', !!process.env.GEMINI_API_KEY, 'GEMINI_ENDPOINT:', !!process.env.GEMINI_API_ENDPOINT);
   });
 };
