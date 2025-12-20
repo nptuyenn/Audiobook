@@ -1,0 +1,39 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.AudioBookforKids" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="android:fontFamily">@font/afacad_flux_regular</item>
+        <item name="fontFamily">@font/afacad_flux_regular</item>
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+
+    <style name="ShapeAppearanceOverlay.App.CornerSizeCircle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Style for rounded corner images -->
+    <style name="RoundedCornerImageView" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="Theme.AudioBookforKids" parent="Base.Theme.AudioBookforKids" />
+
+    <!-- Optimized theme for smooth animations with background images -->
+    <style name="Theme.SmoothAnimation" parent="Base.Theme.AudioBookforKids">
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:hardwareAccelerated">true</item>
+    </style>
+
+    <style name="SplashTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:fontFamily">@font/afacad_flux_regular</item>
+        <item name="fontFamily">@font/afacad_flux_regular</item>
+    </style>
+</resources>
