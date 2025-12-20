@@ -1,143 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFBF3">
+    android:background="#FFFBF3"
+    tools:context=".AIStoryActivity">
 
-    <!-- Header -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#FFFBF3"
-        app:elevation="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:layout_height="match_parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:background="#FFFBF3"
+            app:elevation="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <TextView
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="AI Tạo Truyện"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#283E50"
-                android:gravity="center"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                android:padding="16dp">
 
-            <ImageButton
-                android:id="@+id/btn_open_chat"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_ai_placeholder"
-                android:contentDescription="Chat with AI"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!-- Nội dung chính -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scroll_view"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/app_bar"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Mô tả câu chuyện bạn muốn tạo"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#283E50"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="AI sẽ tạo ra một câu chuyện thú vị dành cho trẻ em dựa trên mô tả của bạn."
-                android:textSize="14sp"
-                android:textColor="#666666"
-                android:layout_marginBottom="16dp" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#D2E1AA"
-                app:strokeWidth="1dp"
-                android:layout_margin="16dp">
-
-                <EditText
-                    android:id="@+id/et_prompt"
+                <TextView
+                    android:id="@+id/ai_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="120dp"
-                    android:padding="16dp"
-                    android:hint="Nhập mô tả câu chuyện của bạn..."
-                    android:textSize="16sp"
+                    android:text="AI Tạo Truyện"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
                     android:textColor="#283E50"
-                    android:textColorHint="#AAAAAA"
-                    android:gravity="top|start"
-                    android:inputType="textMultiLine|textCapSentences"
-                    android:background="@null"
-                    android:maxLength="500" />
+                    android:gravity="center"
+                    app:layout_constraintStart_toEndOf="@id/btn_menu"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-            </com.google.android.material.card.MaterialCardView>
+                <ImageButton
+                    android:id="@+id/btn_menu"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Menu"
+                    android:src="@drawable/ic_menu"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0" />
 
-            <Button
-                android:id="@+id/btn_generate"
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_story_mode"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/app_bar"
+            app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scroll_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Tạo Truyện"
-                android:textSize="18sp"
-                app:backgroundTint="@null"
-                android:textColor="@color/white"
-                android:background="@drawable/button_primary"
-                android:layout_margin="16dp" />
-
-            <ProgressBar
-                android:id="@+id/progress_bar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp" />
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_result"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                android:layout_marginBottom="16dp">
+                android:layout_height="match_parent"
+                android:fillViewport="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -146,100 +78,289 @@
                     android:padding="16dp">
 
                     <TextView
-                        android:id="@+id/tv_story_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Tiêu đề truyện"
-                        android:textSize="20sp"
+                        android:text="Xin chào, mình là Gấu nhỏ"
+                        android:textSize="24sp"
                         android:textStyle="bold"
                         android:textColor="#283E50"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Hôm nay em muốn Gấu nhỏ kể chuyện gì nào?"
+                        android:textSize="16sp"
+                        android:textColor="#666666"
                         android:layout_marginBottom="12dp" />
 
-                    <ScrollView
+
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:maxHeight="300dp">
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp"
+                        app:strokeColor="#D2E1AA"
+                        app:strokeWidth="1dp"
+                        app:cardBackgroundColor="@color/white">
 
-                        <TextView
-                            android:id="@+id/tv_story_content"
+                        <EditText
+                            android:id="@+id/et_prompt"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Nội dung truyện sẽ hiển thị ở đây..."
-                            android:textSize="15sp"
-                            android:textColor="#333333"
-                            android:lineSpacingExtra="4dp" />
+                            android:minHeight="140dp"
+                            android:padding="12dp"
+                            android:hint="Nhập mô tả câu chuyện ở đây...\nVí dụ: Một chú mèo máy thám hiểm vũ trụ."
+                            android:textSize="16sp"
+                            android:textColor="#283E50"
+                            android:textColorHint="#AAAAAA"
+                            android:gravity="top|start"
+                            android:inputType="textMultiLine|textCapSentences"
+                            android:background="@null"
+                            android:maxLength="500" />
 
-                    </ScrollView>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="16dp"
-                        android:gravity="center">
-
-                        <Button
-                            android:id="@+id/btn_listen"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:text="Nghe Audio"
-                            android:drawableStart="@drawable/ic_play_arrow"
-                            android:paddingStart="12dp"
-                            android:layout_marginEnd="4dp"
-                            android:backgroundTint="#2196F3" />
-
-                        <Button
-                            android:id="@+id/btn_save"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:text="Lưu truyện"
-                            android:layout_marginStart="4dp"
-                            android:backgroundTint="#4CAF50" />
-
-                    </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <Button
-                        android:id="@+id/btn_regenerate"
+                        android:id="@+id/btn_generate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Tạo Truyện"
+                        android:textSize="16sp"
+                        android:background="@drawable/button_primary"
+                        android:paddingHorizontal="32dp"
+                        android:textColor="@color/white"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="12dp"
+                        app:backgroundTint="@null"/>
+
+
+                    <ProgressBar
+                        android:id="@+id/progress_bar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        android:indeterminateTint="#FF6B6B"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_result"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Tạo lại truyện khác"
-                        android:layout_marginTop="8dp"
-                        android:backgroundTint="#FF6B6B" />
+                        android:layout_marginTop="16dp"
+                        android:visibility="gone"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp"
+                        app:strokeColor="#D2E1AA"
+                        app:strokeWidth="1dp"
+                        app:cardBackgroundColor="@color/white">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+                            <TextView
+                                android:id="@+id/tv_story_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Tiêu đề"
+                                android:textStyle="bold"
+                                android:textSize="20sp"/>
+                            <TextView
+                                android:id="@+id/tv_story_content"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Nội dung..."
+                                android:layout_marginTop="8dp"/>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="24dp"
+                                android:gravity="center_vertical"
+                                android:weightSum="3"
+                                android:baselineAligned="false">
 
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <ImageButton
+                                        android:id="@+id/btn_listen"
+                                        android:layout_width="60dp"
+                                        android:layout_height="60dp"
+                                        android:background="@drawable/circle_background"
+                                        android:contentDescription="Nghe Audio"
+                                        android:padding="15dp"
+                                        android:scaleType="fitCenter"
+                                        android:src="@drawable/ic_volume_up"
+                                        app:tint="#03A9F4" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="8dp"
+                                        android:text="Nghe Audio"
+                                        android:textColor="#283E50"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <ImageButton
+                                        android:id="@+id/btn_save"
+                                        android:layout_width="60dp"
+                                        android:layout_height="60dp"
+                                        android:background="@drawable/circle_background"
+                                        android:contentDescription="Lưu truyện"
+                                        android:padding="15dp"
+                                        android:scaleType="fitCenter"
+                                        app:tint="#FFC107"
+                                        android:src="@drawable/ic_save"/>
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="8dp"
+                                            android:text="Lưu truyện"
+                                            android:textColor="#283E50"
+                                            android:textSize="14sp"
+                                            android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <ImageButton
+                                        android:id="@+id/btn_regenerate"
+                                        android:layout_width="60dp"
+                                        android:layout_height="60dp"
+                                        android:background="@drawable/circle_background"
+                                        android:contentDescription="Tạo lại"
+                                        android:padding="15dp"
+                                        android:scaleType="fitCenter"
+                                        android:src="@drawable/ic_refresh"
+                                        app:tint="#8DB755"/>
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="8dp"
+                                        android:text="Tạo lại"
+                                        android:textColor="#283E50"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
 
-            </androidx.cardview.widget.CardView>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:elevation="6dp"
+                app:layout_constraintBottom_toBottomOf="parent">
+                <include layout="@layout/layout_mini_player" />
+            </FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </LinearLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/container_chat_mode"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/app_bar"
+            app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
 
-    </androidx.core.widget.NestedScrollView>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_chat"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:padding="8dp"
+                android:clipToPadding="false"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/layout_input" />
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="100dp"
-        android:elevation="6dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-        <include layout="@layout/layout_mini_player" />
-    </FrameLayout>
+            <LinearLayout
+                android:id="@+id/layout_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:background="#FFFFFF"
+                app:layout_constraintBottom_toBottomOf="parent">
+                <EditText
+                    android:id="@+id/et_message"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Hỏi Gấu Nhỏ gì đó..."
+                    android:padding="12dp"
+                    android:background="@drawable/search_box_border"
+                    android:maxLines="4"/>
+                <ImageButton
+                    android:id="@+id/btn_send"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_send"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="#8BC34A" />
+            </LinearLayout>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:elevation="5dp"
-        app:itemIconSize="26dp"
-        app:labelVisibilityMode="labeled"
-        android:background="@color/white"
-        app:itemIconTint="@color/bottom_nav_color_selector"
-        app:itemTextColor="@color/bottom_nav_color_selector"
-        app:menu="@menu/bottom_nav_menu"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+            <ProgressBar
+                android:id="@+id/progress_chat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:indeterminateTint="#FF6B6B"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@color/white"
+            app:backgroundTint="@null"
+            android:elevation="5dp"
+            app:itemIconSize="26dp"
+            app:labelVisibilityMode="labeled"
+            app:itemIconTint="@color/bottom_nav_color_selector"
+            app:itemTextColor="@color/bottom_nav_color_selector"
+            app:menu="@menu/bottom_nav_menu"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#FFFBF3"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/drawer_menu"
+        app:itemIconTint="#283E50"
+        app:itemTextColor="#283E50" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

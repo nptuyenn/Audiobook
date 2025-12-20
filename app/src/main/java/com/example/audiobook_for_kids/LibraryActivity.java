@@ -125,7 +125,7 @@ public class LibraryActivity extends AppCompatActivity {
     }
 
     private void setupTabs() {
-        tabLayout.addTab(tabLayout.newTab().setText("Đã lưu"));
+        tabLayout.addTab(tabLayout.newTab().setText("Đã tạo"));
         tabLayout.addTab(tabLayout.newTab().setText("Đã nghe"));
         tabLayout.addTab(tabLayout.newTab().setText("Yêu thích"));
 
@@ -287,7 +287,7 @@ public class LibraryActivity extends AppCompatActivity {
         audioManager.getIsPlaying().observe(this, isPlaying -> {
             if (isPlaying != null) {
                 btnMiniPlay.setImageResource(isPlaying ?
-                    R.drawable.ic_pause : R.drawable.ic_play_arrow);
+                        R.drawable.ic_pause : R.drawable.ic_play_arrow);
             }
         });
 

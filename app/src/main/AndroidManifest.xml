@@ -48,10 +48,7 @@
             android:name=".AIStoryActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
-        <activity
-            android:name=".AIChatActivity"
-            android:exported="false"
-            android:parentActivityName=".AIStoryActivity" />
+
         <activity
             android:name=".LibraryActivity"
             android:exported="false"
