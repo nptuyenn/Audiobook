@@ -4,27 +4,45 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.ImageButton;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.audiobook_for_kids.api.ApiClient;
+import com.example.audiobook_for_kids.api.ApiService;
+import com.example.audiobook_for_kids.auth.SessionManager;
+import com.example.audiobook_for_kids.model.requests.AIStoryRequest;
+import com.example.audiobook_for_kids.model.responses.AIStoryResponse;
 import com.example.audiobook_for_kids.service.AudioPlaybackManager;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.bumptech.glide.Glide;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AIStoryActivity extends AppCompatActivity {
 
+    private static final String TAG = "AIStoryActivity";
     private EditText etPrompt;
-    private Button btnGenerate;
+    private Button btnGenerate, btnListen, btnSave, btnRegenerate;
     private ProgressBar progressBar;
     private CardView cardResult;
-    private TextView tvStoryTitle;
-    private TextView tvStoryContent;
+    private TextView tvStoryTitle, tvStoryContent;
+    private ImageButton btnOpenChat;
+
+    private String currentAudioBase64;
+    private File tempAudioFile;
 
     // Mini player views
     private CardView layoutMiniPlayer;
@@ -45,107 +63,90 @@ public class AIStoryActivity extends AppCompatActivity {
         cardResult = findViewById(R.id.card_result);
         tvStoryTitle = findViewById(R.id.tv_story_title);
         tvStoryContent = findViewById(R.id.tv_story_content);
-        Button btnSave = findViewById(R.id.btn_save);
-        Button btnRegenerate = findViewById(R.id.btn_regenerate);
+        btnListen = findViewById(R.id.btn_listen);
+        btnSave = findViewById(R.id.btn_save);
+        btnRegenerate = findViewById(R.id.btn_regenerate);
+        btnOpenChat = findViewById(R.id.btn_open_chat);
 
-        // Xử lý thay đổi text trong EditText
         etPrompt.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Enable/disable button dựa vào text
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 btnGenerate.setEnabled(s.length() > 0);
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
+            @Override public void afterTextChanged(Editable s) {}
         });
 
-        // Xử lý nút tạo truyện
         btnGenerate.setOnClickListener(v -> generateStory());
-
-        // Xử lý nút tạo lại
         btnRegenerate.setOnClickListener(v -> generateStory());
-
-        // Xử lý nút lưu
+        btnListen.setOnClickListener(v -> playGeneratedAudio());
         btnSave.setOnClickListener(v -> saveStory());
-
-        // Disable button ban đầu
-        btnGenerate.setEnabled(false);
-
-        // Xử lý Bottom Navigation
-        setupBottomNavigation();
-
-        // Setup mini player
-        setupMiniPlayer();
-    }
-
-    private void setupBottomNavigation() {
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
-        bottomNav.setSelectedItemId(R.id.nav_ai);
-
-        bottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-
-            if (itemId == R.id.nav_home) {
-                finish();
-                return true;
-            } else if (itemId == R.id.nav_ai) {
-                // Đã ở trang AI
-                return true;
-            }  else if (itemId == R.id.nav_library) {
-                Intent intent = new Intent(AIStoryActivity.this, LibraryActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
-            } else if (itemId == R.id.nav_account) {
-                Intent intent = new Intent(AIStoryActivity.this, AccountActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
-            }
-
-            return false;
+        btnOpenChat.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AIChatActivity.class);
+            startActivity(intent);
         });
+
+        btnGenerate.setEnabled(false);
+        setupBottomNavigation();
+        setupMiniPlayer();
     }
 
     private void generateStory() {
         String prompt = etPrompt.getText().toString().trim();
+        if (prompt.isEmpty()) return;
 
-        if (prompt.isEmpty()) {
-            return;
-        }
-
-        // Hiển thị progress bar
         progressBar.setVisibility(View.VISIBLE);
         btnGenerate.setEnabled(false);
         cardResult.setVisibility(View.GONE);
 
-        // TODO: Gọi API AI để tạo truyện
-        // Giả lập việc tạo truyện (thay bằng API call thực tế)
-        simulateStoryGeneration(prompt);
+        ApiService apiService = ApiClient.getClient().create(ApiService.class);
+        String token = "Bearer " + SessionManager.getInstance(this).getToken();
+        
+        AIStoryRequest request = new AIStoryRequest(prompt, "Truyện AI");
+        
+        apiService.generateAIStory(token, request).enqueue(new Callback<AIStoryResponse>() {
+            @Override
+            public void onResponse(Call<AIStoryResponse> call, Response<AIStoryResponse> response) {
+                progressBar.setVisibility(View.GONE);
+                btnGenerate.setEnabled(true);
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    AIStoryResponse data = response.body();
+                    currentAudioBase64 = data.getAudioBase64();
+                    showStoryResult("Truyện: " + prompt, data.getText());
+                    saveAudioToTempFile(currentAudioBase64);
+                } else {
+                    Toast.makeText(AIStoryActivity.this, "Lỗi khi tạo truyện", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AIStoryResponse> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                btnGenerate.setEnabled(true);
+                Toast.makeText(AIStoryActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private void simulateStoryGeneration(String prompt) {
-        // Giả lập delay của API call
-        new android.os.Handler().postDelayed(() -> {
-            // Ẩn progress bar
-            progressBar.setVisibility(View.GONE);
-            btnGenerate.setEnabled(true);
+    private void saveAudioToTempFile(String base64) {
+        if (base64 == null) return;
+        try {
+            byte[] audioData = Base64.decode(base64, Base64.DEFAULT);
+            tempAudioFile = File.createTempFile("ai_story", ".mp3", getCacheDir());
+            try (FileOutputStream fos = new FileOutputStream(tempAudioFile)) {
+                fos.write(audioData);
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error saving temp audio", e);
+        }
+    }
 
-            // Hiển thị kết quả (giả lập)
-            showStoryResult(
-                "Câu chuyện về " + prompt,
-                "Ngày xửa ngày xưa, có một câu chuyện về " + prompt + "...\n\n" +
-                "Đây là nội dung truyện được AI tạo ra dựa trên yêu cầu của bạn. " +
-                "Trong tương lai, đây sẽ là nội dung thực sự từ AI.\n\n" +
-                "Truyện sẽ có nhiều đoạn văn thú vị và phù hợp với lứa tuổi thiếu nhi."
-            );
-        }, 2000); // 2 giây delay
+    private void playGeneratedAudio() {
+        if (tempAudioFile != null && tempAudioFile.exists()) {
+            audioManager.playLocalFile(tempAudioFile.getAbsolutePath(), tvStoryTitle.getText().toString(), "AI Gấu Nhỏ");
+        } else {
+            Toast.makeText(this, "Chưa có file âm thanh", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showStoryResult(String title, String content) {
@@ -155,86 +156,49 @@ public class AIStoryActivity extends AppCompatActivity {
     }
 
     private void saveStory() {
-        // TODO: Lưu truyện vào database hoặc shared preferences
-        // Hiển thị thông báo đã lưu
-        android.widget.Toast.makeText(this, "Đã lưu truyện!", android.widget.Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Đã gửi yêu cầu lưu truyện!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void setupBottomNavigation() {
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav.setSelectedItemId(R.id.nav_ai);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) { finish(); return true; }
+            else if (itemId == R.id.nav_ai) return true;
+            else if (itemId == R.id.nav_library) {
+                startActivity(new Intent(this, LibraryActivity.class));
+                finish(); return true;
+            } else if (itemId == R.id.nav_account) {
+                startActivity(new Intent(this, AccountActivity.class));
+                finish(); return true;
+            }
+            return false;
+        });
     }
 
     private void setupMiniPlayer() {
-        // Initialize views
         layoutMiniPlayer = findViewById(R.id.layout_mini_player);
         ivMiniCover = findViewById(R.id.iv_mini_cover);
         tvMiniTitle = findViewById(R.id.tv_mini_title);
         tvMiniAuthor = findViewById(R.id.tv_mini_author);
         btnMiniPlay = findViewById(R.id.btn_mini_play);
 
-        // Initialize audio manager
         audioManager = AudioPlaybackManager.getInstance();
         audioManager.initialize(this);
 
-        // Observe audio manager state
         audioManager.getShouldShowMiniPlayer().observe(this, shouldShow -> {
-            if (shouldShow != null) {
-                layoutMiniPlayer.setVisibility(shouldShow ? CardView.VISIBLE : CardView.GONE);
-            }
+            if (shouldShow != null) layoutMiniPlayer.setVisibility(shouldShow ? CardView.VISIBLE : CardView.GONE);
         });
-
-        audioManager.getCurrentTitle().observe(this, title -> {
-            if (title != null) {
-                tvMiniTitle.setText(title);
-            }
-        });
-
-        audioManager.getCurrentAuthor().observe(this, author -> {
-            if (author != null) {
-                tvMiniAuthor.setText(author);
-            }
-        });
-
-        audioManager.getCurrentCover().observe(this, coverUrl -> {
-            if (coverUrl != null && !coverUrl.isEmpty()) {
-                Glide.with(this)
-                        .load(coverUrl)
-                        .placeholder(R.drawable.ic_headphone_placeholder)
-                        .error(R.drawable.ic_headphone_placeholder)
-                        .into(ivMiniCover);
-            }
-        });
-
+        audioManager.getCurrentTitle().observe(this, title -> { if (title != null) tvMiniTitle.setText(title); });
+        audioManager.getCurrentAuthor().observe(this, author -> { if (author != null) tvMiniAuthor.setText(author); });
         audioManager.getIsPlaying().observe(this, isPlaying -> {
-            if (isPlaying != null) {
-                btnMiniPlay.setImageResource(isPlaying ?
-                    R.drawable.ic_pause : R.drawable.ic_play_arrow);
-            }
+            if (isPlaying != null) btnMiniPlay.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play_arrow);
         });
 
-        // Set click listeners
         btnMiniPlay.setOnClickListener(v -> {
             Boolean playing = audioManager.getIsPlaying().getValue();
-            if (playing != null && playing) {
-                audioManager.pause();
-            } else {
-                audioManager.play();
-            }
-        });
-
-        layoutMiniPlayer.setOnClickListener(v -> {
-            // Open PlayerActivity with current playing book
-            String bookId = audioManager.getCurrentBookId().getValue();
-            String title = audioManager.getCurrentTitle().getValue();
-            String author = audioManager.getCurrentAuthor().getValue();
-            String cover = audioManager.getCurrentCover().getValue();
-
-            if (bookId != null && !bookId.isEmpty()) {
-                Intent intent = new Intent(this, PlayerActivity.class);
-                intent.putExtra("book_id", bookId);
-                intent.putExtra("book_title", title);
-                intent.putExtra("book_author", author);
-                intent.putExtra("book_cover", cover);
-                intent.putExtra("from_mini_player", true);
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation);
-            }
+            if (playing != null && playing) audioManager.pause(); else audioManager.play();
         });
     }
 }

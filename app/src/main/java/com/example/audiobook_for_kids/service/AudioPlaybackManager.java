@@ -33,8 +33,6 @@ public class AudioPlaybackManager {
     private final MutableLiveData<Boolean> shouldShowMiniPlayer = new MutableLiveData<>(false);
     private int startPosition = -1;
 
-    // ... constructor và getInstance giữ nguyên ...
-
     public void setStartPosition(int position) {
         this.startPosition = position;
     }
@@ -113,6 +111,10 @@ public class AudioPlaybackManager {
             }
         }
     };
+
+    public void playLocalFile(String filePath, String title, String author) {
+        setAudioSource(filePath, title, author, "", "ai_story");
+    }
 
     public void setAudioSource(String audioUrl, String title, String author, String cover, String bookId) {
         try {
