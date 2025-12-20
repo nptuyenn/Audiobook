@@ -69,6 +69,7 @@
                 android:id="@+id/scroll_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:padding="6dp"
                 android:fillViewport="true">
 
                 <LinearLayout
@@ -301,8 +302,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:layout_marginBottom="4dp"
                 android:padding="8dp"
-                android:background="#FFFFFF"
+                android:background="@drawable/white_border"
                 app:layout_constraintBottom_toBottomOf="parent">
                 <EditText
                     android:id="@+id/et_message"
@@ -360,7 +362,16 @@
         android:background="#FFFBF3"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/drawer_menu"
-        app:itemIconTint="#283E50"
-        app:itemTextColor="#283E50" />
+
+        app:itemBackground="@drawable/nav_item_background_rect"
+
+        app:itemIconTint="@color/nav_item_background_rect_ai"
+        app:itemTextColor="@color/nav_item_background_rect_ai"
+
+        app:itemShapeInsetStart="12dp"
+        app:itemShapeInsetEnd="12dp"
+
+        app:itemTextAppearance="@style/MenuTextStyle"
+        app:itemVerticalPadding="8dp" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

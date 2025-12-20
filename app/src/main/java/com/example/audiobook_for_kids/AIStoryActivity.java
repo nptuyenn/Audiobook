@@ -138,13 +138,13 @@ public class AIStoryActivity extends AppCompatActivity {
         // Sự kiện chọn item trong menu
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
-
             // Lưu ý: Đảm bảo file menu/drawer_menu.xml của bạn có các ID này
             if (id == R.id.nav_create_story) { // Giả sử ID menu tạo truyện là nav_create_story
                 switchToStoryMode();
             } else if (id == R.id.nav_chat) { // Giả sử ID menu chat là nav_chat
                 switchToChatMode();
             }
+            item.setChecked(true);
 
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;

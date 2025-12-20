@@ -36,4 +36,9 @@
         <item name="android:fontFamily">@font/afacad_flux_regular</item>
         <item name="fontFamily">@font/afacad_flux_regular</item>
     </style>
+    <style name="MenuTextStyle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/afacad_flux_regular</item>
+    </style>
 </resources>

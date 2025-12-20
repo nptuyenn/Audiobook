@@ -28,8 +28,7 @@
             android:id="@+id/iv_splash_logo"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:src="@drawable/logo_no_word"
-            android:contentDescription="KidoBook Logo"
+            android:src="@mipmap/ic_launcher_round"            android:contentDescription="KidoBook Logo"
             android:scaleType="centerCrop" />
 
         <!-- App Name -->
