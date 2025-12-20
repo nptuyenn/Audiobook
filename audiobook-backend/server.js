@@ -1,7 +1,8 @@
 // server.js
+import "./config/env.js";
+
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import cors from "cors";
 
 // Routes
@@ -10,8 +11,7 @@ import bookRoutes from "./routes/books.js";
 import audioRoutes from "./routes/audio.js";
 import activityRoutes from "./routes/activity.js";
 import aiContentRoutes from "./routes/aiContent.js";
-
-dotenv.config();
+import aiRoutes from "./routes/ai.js";
 
 const app = express();
 
@@ -30,6 +30,7 @@ app.use("/books", bookRoutes);
 app.use("/audio", audioRoutes);
 app.use("/activity", activityRoutes);
 app.use("/ai-content", aiContentRoutes);
+app.use("/ai", aiRoutes);
 
 // 404 Handler - CHỈ BẮT KHI KHÔNG KHỚP ROUTE NÀO
 app.all("*", (req, res) => {
@@ -66,6 +67,7 @@ const startServer = async () => {
   await connectDB();
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
+    console.log('AI env -> GOOGLE_API_KEY:', !!process.env.GOOGLE_API_KEY, 'GEMINI_KEY:', !!process.env.GEMINI_API_KEY, 'GEMINI_ENDPOINT:', !!process.env.GEMINI_API_ENDPOINT);
   });
 };
 

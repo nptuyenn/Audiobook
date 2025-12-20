@@ -1,3 +1,5 @@
+audiobook-backend/.env
+audiobook-backend/docs/.env.example
 *.iml
 .gradle
 /local.properties
