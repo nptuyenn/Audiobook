@@ -1,5 +1,6 @@
 import { generateStory } from "../services/geminiService.js";
 import { synthesizeToMp3 } from "../services/ttsService.js";
+import { transcribeBuffer } from "../services/speechService.js";
 import { uploadBuffer } from "../services/cloudinaryService.js";
 import AIContent from "../models/AIContent.js";
 
@@ -20,6 +21,32 @@ export async function createStory(req, res) {
     });
   } catch (err) {
     console.error('createStory error:', err);
+    res.status(500).json({ message: err.message || 'Server error' });
+  }
+}
+
+export async function createStoryFromSpeech(req, res) {
+  const { audioBase64, audioMime, title } = req.body;
+  if (!audioBase64) return res.status(400).json({ message: "audioBase64 is required" });
+
+  try {
+    const audioBuffer = Buffer.from(audioBase64, 'base64');
+    console.log('createStoryFromSpeech -> transcribing audio, mime:', audioMime);
+    const transcript = await transcribeBuffer(audioBuffer, audioMime);
+
+    if (!transcript) return res.status(400).json({ message: 'No speech recognized' });
+
+    const text = await generateStory(transcript);
+    const outputAudio = await synthesizeToMp3(text);
+
+    return res.json({
+      transcript,
+      text,
+      audioBase64: outputAudio.toString('base64'),
+      audioMime: 'audio/mpeg'
+    });
+  } catch (err) {
+    console.error('createStoryFromSpeech error:', err);
     res.status(500).json({ message: err.message || 'Server error' });
   }
 }
