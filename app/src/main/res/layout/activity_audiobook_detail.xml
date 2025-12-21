@@ -112,9 +112,9 @@
                 android:gravity="center">
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_headphone_placeholder"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_time"
                     android:contentDescription="Thời lượng" />
 
                 <TextView
@@ -129,18 +129,22 @@
             </LinearLayout>
 
 
-
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center">
-
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="8dp"
+                android:id="@+id/btn_open_rating">
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_home_placeholder"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_star_filled"
+                    app:tint="#FFC107"
                     android:contentDescription="Đánh giá" />
 
                 <TextView
@@ -148,9 +152,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="4.5 ⭐"
-                    android:textSize="12sp"
-                    android:textColor="#666666" />
+                    android:text="4.5/5"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:textColor="#333333" />
 
             </LinearLayout>
 
