@@ -13,12 +13,14 @@ export async function createStory(req, res) {
     const text = await generateStory(topic);
     const audioBuffer = await synthesizeToMp3(text);
 
-    // Return text + audio as base64 so Android can play immediately
+    const uploadRes = await uploadBuffer(audioBuffer, { folder: 'ai-stories' });
+
     return res.json({
       text,
-      audioBase64: audioBuffer.toString('base64'),
+      audioUrl: uploadRes.secure_url,
       audioMime: 'audio/mpeg'
     });
+
   } catch (err) {
     console.error('createStory error:', err);
     res.status(500).json({ message: err.message || 'Server error' });
@@ -39,12 +41,15 @@ export async function createStoryFromSpeech(req, res) {
     const text = await generateStory(transcript);
     const outputAudio = await synthesizeToMp3(text);
 
-    return res.json({
-      transcript,
-      text,
-      audioBase64: outputAudio.toString('base64'),
-      audioMime: 'audio/mpeg'
-    });
+    const uploadRes = await uploadBuffer(outputAudio, { folder: 'ai-stories' });
+
+      return res.json({
+        transcript,
+        text,
+        audioUrl: uploadRes.secure_url,
+        audioMime: 'audio/mpeg'
+      });
+
   } catch (err) {
     console.error('createStoryFromSpeech error:', err);
     res.status(500).json({ message: err.message || 'Server error' });
@@ -52,33 +57,28 @@ export async function createStoryFromSpeech(req, res) {
 }
 
 export async function saveStory(req, res) {
-  // Accept title, text and audioBase64 from client OR re-generate if not provided
-  const { title, text, audioBase64 } = req.body;
+  const { title, text, audioUrl } = req.body;
   const userId = req.user?.id;
 
-  if (!text || !audioBase64) return res.status(400).json({ message: 'text and audioBase64 are required' });
+  if (!text || !audioUrl) return res.status(400).json({ message: 'text and audioUrl are required' });
 
   try {
-    const buffer = Buffer.from(audioBase64, 'base64');
-    const uploadRes = await uploadBuffer(buffer, { folder: 'ai-stories' });
-
     const aiContent = new AIContent({
       userId,
       title: title || `Truyện: ${new Date().toISOString()}`,
       storyText: text,
-      audioUrl: uploadRes.secure_url
+      audioUrl
     });
 
     await aiContent.save();
 
-    // Also create an Audio asset record
+    // Tạo record Audio
     try {
       const Audio = (await import('../models/Audio.js')).default;
       const audioDoc = new Audio({
         userId,
         title: aiContent.title,
-        audioUrl: uploadRes.secure_url,
-        sizeBytes: uploadRes.bytes || uploadRes.size || null,
+        audioUrl,
         voice: process.env.AZURE_VOICE_NAME || 'HoaiMy'
       });
       await audioDoc.save();
@@ -89,9 +89,10 @@ export async function saveStory(req, res) {
     res.json({ message: 'Saved', aiContent });
   } catch (err) {
     console.error('saveStory error:', err);
-    res.status(500).json({ message: 'Upload or save failed' });
+    res.status(500).json({ message: 'Save failed' });
   }
 }
+
 
 export async function chat(req, res) {
   const { message, history } = req.body;

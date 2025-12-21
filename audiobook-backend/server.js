@@ -22,8 +22,8 @@ app.use(cors({
   origin: "*", 
   credentials: true
 }));
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "30mb" }));
+app.use(express.urlencoded({ limit: "30mb", extended: true }));
 
 // --- Routes 
 app.use("/auth", authRoutes);

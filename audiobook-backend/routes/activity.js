@@ -34,12 +34,16 @@ router.route("/favorites")
         isFavorite: true
       }).populate("bookId", "title coverUrl author");
 
-      res.json(favorites.map(f => ({
+      const result = favorites
+      .filter(f => f.bookId) 
+      .map(f => ({
         bookId: f.bookId._id,
         title: f.bookId.title,
         coverUrl: f.bookId.coverUrl,
         author: f.bookId.author
-      })));
+      }));
+
+res.json(result);
     } catch (err) {
       next(err);
     }
