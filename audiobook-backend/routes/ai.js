@@ -7,7 +7,7 @@ import { createStory, createStoryFromSpeech, saveStory, chat } from '../controll
 
 const storySchema = Joi.object({ topic: Joi.string().min(2).required(), title: Joi.string().optional() });
 const speechSchema = Joi.object({ audioBase64: Joi.string().required(), audioMime: Joi.string().optional(), title: Joi.string().optional() });
-const saveSchema = Joi.object({ title: Joi.string().optional(), text: Joi.string().required(), audioBase64: Joi.string().required() });
+const saveSchema = Joi.object({ title: Joi.string().optional(), text: Joi.string().required(), audioUrl: Joi.string().required() });
 const chatSchema = Joi.object({ message: Joi.string().min(1).required(), history: Joi.array().optional() });
 
 const router = express.Router();

@@ -2,6 +2,7 @@ import express from "express";
 import { protect } from "../middleware/auth.js";
 import UserActivity from "../models/UserActivity.js";
 import Book from "../models/Book.js";
+import Audio from "../models/Audio.js";
 
 const router = express.Router();
 
@@ -13,13 +14,30 @@ router.post("/progress", protect, async (req, res, next) => {
       return res.status(400).json({ message: "Thiếu input" });
     }
 
+    const audioChapters = await Audio.find({ bookId }).sort({ chapter: -1 });
+    const lastChapter = audioChapters[0];
+
+    let isFinished = false;
+    if (lastChapter && chapter === lastChapter.chapter) {
+      const chapterDuration = lastChapter.durationSec;
+      // Mark as finished if progress is within 95% of the last chapter's duration
+      if (chapterDuration > 0 ) {
+        isFinished = true;
+      }
+    }
+
+    const updateData = { chapter, progressTime, updatedAt: new Date() };
+    if (isFinished) {
+      updateData.isFinished = true;
+    }
+
     await UserActivity.updateOne(
       { userId: req.user.id, bookId },
-      { chapter, progressTime, updatedAt: new Date() },
+      updateData,
       { upsert: true }
     );
 
-    res.json({ message: "Cập nhật tiến trình thành công" });
+    res.json({ message: "Cập nhật tiến trình thành công", isFinished });
   } catch (err) {
     next(err);
   }
@@ -80,7 +98,37 @@ router.post("/review", protect, async (req, res, next) => {
       { upsert: true }
     );
 
+    // Recalculate average rating for the book
+    const activities = await UserActivity.find({ bookId, rating: { $exists: true, $ne: null } });
+    const totalRating = activities.reduce((sum, act) => sum + act.rating, 0);
+    const avgRating = activities.length > 0 ? totalRating / activities.length : 0;
+
+    await Book.updateOne({ _id: bookId }, { avgRating });
+
     res.json({ message: "Gửi đánh giá thành công" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /activity/listened
+router.get("/listened", protect, async (req, res, next) => {
+  try {
+    const listenedActivities = await UserActivity.find({
+      userId: req.user.id,
+      isFinished: true
+    }).populate("bookId", "title coverUrl author");
+
+    const result = listenedActivities
+      .filter(activity => activity.bookId)
+      .map(activity => ({
+        bookId: activity.bookId._id,
+        title: activity.bookId.title,
+        coverUrl: activity.bookId.coverUrl,
+        author: activity.bookId.author
+      }));
+
+    res.json(result);
   } catch (err) {
     next(err);
   }

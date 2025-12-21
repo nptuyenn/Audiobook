@@ -8,6 +8,7 @@ const userActivitySchema = new mongoose.Schema({
   isFavorite: Boolean,
   rating: Number,
   review: String,
+  isFinished: { type: Boolean, default: false },
   updatedAt: { type: Date, default: Date.now }
 });
 
