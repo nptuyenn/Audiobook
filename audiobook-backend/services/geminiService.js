@@ -8,7 +8,7 @@ const defaultSystemPrompt = `Bạn là nhà văn chuyên viết truyện thiếu
 Hãy viết một câu chuyện ngắn dành cho bé với giọng văn thân thiện, đơn giản và giàu cảm xúc.
 
 YÊU CẦU BẮT BUỘC:
-1. Độ dài: Câu chuyện phải cực kỳ chi tiết, gồm ít nhất 6 đến 8 đoạn văn dài.
+1. Độ dài: Câu chuyện phải cực kỳ chi tiết, gồm ít nhất 3 đến 4 đoạn văn dài.
 2. Nội dung: Miêu tả kỹ bối cảnh thiên nhiên, hành động cụ thể và suy nghĩ nội tâm của nhân vật.
 3. Hình thức: Trả về duy nhất nội dung truyện, không thêm lời chào hay lời dẫn.
 4. Ngôn ngữ: Tiếng Việt, sử dụng từ ngữ giàu hình ảnh.`;
@@ -17,11 +17,7 @@ export async function generateStory(topic, systemPrompt = defaultSystemPrompt) {
   // Lấy API Key từ biến môi trường
   const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
   
-  /**
-   * TÊN MODEL QUAN TRỌNG: 
-   * 'gemini-1.5-flash' là bản ổn định nhất hiện tại cho Free Tier.
-   * Tránh dùng '2.5-flash' vì đó không phải tên model chính thức, dẫn đến fallback lỗi.
-   */
+
   const modelName = 'gemini-2.5-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GOOGLE_API_KEY}`;
 
@@ -42,9 +38,9 @@ export async function generateStory(topic, systemPrompt = defaultSystemPrompt) {
         }
       ],
       generationConfig: {
-        maxOutputTokens: 2500, // Tăng giới hạn để AI có không gian viết dài
-        temperature: 1.0,      // Tăng lên 1.0 để AI sáng tạo và viết phóng khoáng hơn (giúp tăng độ dài)
-        topP: 0.95,
+        maxOutputTokens: 1700, 
+        temperature: 0.7,      
+        topP: 0.8,
         candidateCount: 1
       }
     };
