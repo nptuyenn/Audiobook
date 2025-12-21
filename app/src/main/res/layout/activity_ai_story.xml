@@ -61,7 +61,7 @@
             android:id="@+id/container_story_mode"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/app_bar"
             app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
 
@@ -105,23 +105,43 @@
                         app:strokeWidth="1dp"
                         app:cardBackgroundColor="@color/white">
 
-                        <EditText
-                            android:id="@+id/et_prompt"
+                        <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:minHeight="140dp"
-                            android:padding="12dp"
-                            android:hint="Nhập mô tả câu chuyện ở đây...\nVí dụ: Một chú mèo máy thám hiểm vũ trụ."
-                            android:textSize="16sp"
-                            android:textColor="#283E50"
-                            android:textColorHint="#AAAAAA"
-                            android:gravity="top|start"
-                            android:inputType="textMultiLine|textCapSentences"
-                            android:background="@null"
-                            android:maxLength="500" />
+                            android:layout_height="wrap_content">
+
+                            <EditText
+                                android:id="@+id/et_prompt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="140dp"
+                                android:padding="12dp"
+                                android:paddingBottom="48dp"
+                                android:hint="Nhập mô tả câu chuyện ở đây hoặc nói vào mic...\nVí dụ: Một chú mèo máy thám hiểm vũ trụ."
+                                android:textSize="16sp"
+                                android:textColor="#283E50"
+                                android:textColorHint="#AAAAAA"
+                                android:gravity="top|start"
+                                android:inputType="textMultiLine|textCapSentences"
+                                android:background="@null"
+                                android:maxLength="500"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent" />
+                            <ImageButton
+                                android:id="@+id/btn_mic_story"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@drawable/ic_mic"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                app:tint="#8BC34A"
+                                android:layout_margin="8dp"
+                                android:contentDescription="Nhập bằng giọng nói"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
 
                     </com.google.android.material.card.MaterialCardView>
-
                     <Button
                         android:id="@+id/btn_generate"
                         android:layout_width="wrap_content"
@@ -284,7 +304,7 @@
             android:id="@+id/container_chat_mode"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_constraintTop_toBottomOf="@id/app_bar"
             app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
 
@@ -306,22 +326,51 @@
                 android:padding="8dp"
                 android:background="@drawable/white_border"
                 app:layout_constraintBottom_toBottomOf="parent">
-                <EditText
-                    android:id="@+id/et_message"
+
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Hỏi Gấu Nhỏ gì đó..."
-                    android:padding="12dp"
                     android:background="@drawable/search_box_border"
-                    android:maxLines="4"/>
+                    android:paddingEnd="4dp">
+
+                    <EditText
+                        android:id="@+id/et_message"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:hint="Hỏi Gấu Nhỏ gì đó..."
+                        android:padding="12dp"
+                        android:paddingEnd="48dp"
+                        android:maxLines="4"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"/>
+
+                    <ImageButton
+                        android:id="@+id/btn_mic_chat"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_mic"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:tint="#8BC34A"
+                        android:contentDescription="Nói chuyện"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
                 <ImageButton
                     android:id="@+id/btn_send"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
                     android:src="@drawable/ic_send"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    app:tint="#8BC34A" />
+                    app:tint="#8BC34A"
+                    android:layout_gravity="bottom"/>
             </LinearLayout>
 
             <ProgressBar

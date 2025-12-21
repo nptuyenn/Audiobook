@@ -67,7 +67,7 @@ public class AIStoryActivity extends AppCompatActivity {
 
     // 3 nút chức năng tròn
     private ImageButton btnListen, btnSave, btnRegenerate;
-
+    private ImageButton btnMicStory;
     private String currentAudioBase64;
     private File tempAudioFile;
 
@@ -113,6 +113,7 @@ public class AIStoryActivity extends AppCompatActivity {
 
         // 2. Story Views
         etPrompt = findViewById(R.id.et_prompt);
+        btnMicStory = findViewById(R.id.btn_mic_story);
         btnGenerate = findViewById(R.id.btn_generate);
         progressBarStory = findViewById(R.id.progress_bar);
         cardResult = findViewById(R.id.card_result);
