@@ -5,6 +5,7 @@ import com.example.audiobook_for_kids.model.AudioChapter;
 import com.example.audiobook_for_kids.model.Book;
 import com.example.audiobook_for_kids.model.FavoriteBook;
 import com.example.audiobook_for_kids.model.requests.AIChatRequest;
+import com.example.audiobook_for_kids.model.requests.AISaveStoryRequest;
 import com.example.audiobook_for_kids.model.requests.AIStoryRequest;
 import com.example.audiobook_for_kids.model.requests.FavoriteRequest;
 import com.example.audiobook_for_kids.model.requests.ProgressRequest;
@@ -17,6 +18,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 import java.util.List;
 
 public interface ApiService {
@@ -39,10 +41,19 @@ public interface ApiService {
     @POST("activity/progress")
     Call<Void> updateProgress(@Header("Authorization") String authHeader, @Body ProgressRequest body);
 
+    @GET("activity/recent")
+    Call<List<Book>> getRecentListens(@Header("Authorization") String authHeader);
+
     // AI endpoints
     @POST("ai/story")
     Call<AIStoryResponse> generateAIStory(@Header("Authorization") String authHeader, @Body AIStoryRequest body);
 
+    @POST("ai/story/save")
+    Call<Void> saveAIStory(@Header("Authorization") String authHeader, @Body AISaveStoryRequest body);
+
     @POST("ai/chat")
     Call<AIChatResponse> chatWithAI(@Header("Authorization") String authHeader, @Body AIChatRequest body);
+
+    @POST("ai/story/voice")
+    Call<AIStoryResponse> generateAIStoryFromVoice(@Header("Authorization") String authHeader, @Body String audioBase64);
 }

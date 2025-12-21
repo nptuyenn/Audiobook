@@ -423,4 +423,59 @@
         app:itemTextAppearance="@style/MenuTextStyle"
         app:itemVerticalPadding="8dp" />
 
+    <!-- Khung đang nói (Voice Overlay) -->
+    <FrameLayout
+        android:id="@+id/layout_voice_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/search_box_border"
+            android:backgroundTint="#FFFFFF"
+            android:padding="32dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_mic"
+                app:tint="#FF6B6B" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gấu Nhỏ đang nghe..."
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:textColor="#283E50" />
+
+            <TextView
+                android:id="@+id/tv_voice_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hãy nói gì đó nhé!"
+                android:layout_marginTop="8dp"
+                android:textColor="#666666" />
+
+            <Button
+                android:id="@+id/btn_stop_voice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dừng lại"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="#FF6B6B" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
 </androidx.drawerlayout.widget.DrawerLayout>

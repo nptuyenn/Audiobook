@@ -125,7 +125,6 @@ public class AudioPlaybackManager {
                 return;
             }
 
-            shouldShowMiniPlayer.setValue(false);
             mediaPlayer = new MediaPlayer();
 
             // Cấu hình Audio Attributes
@@ -142,24 +141,20 @@ public class AudioPlaybackManager {
             mediaPlayer.setVolume(1.0f, 1.0f);
             mediaPlayer.setDataSource(audioUrl);
 
-            // Cập nhật thông tin bài hát lên UI
-            currentTitle.setValue(title != null ? title : "Unknown Title");
-            currentAuthor.setValue(author != null ? author : "Unknown Author");
-            currentCover.setValue(cover != null ? cover : "");
-            currentBookId.setValue(bookId != null ? bookId : "");
+            // Cập nhật thông tin bài hát ngay lập tức
+            currentTitle.postValue(title != null ? title : "Unknown Title");
+            currentAuthor.postValue(author != null ? author : "Unknown Author");
+            currentCover.postValue(cover != null ? cover : "");
+            currentBookId.postValue(bookId != null ? bookId : "");
 
-            // --- PHẦN QUAN TRỌNG NHẤT ĐÂY ---
             mediaPlayer.setOnPreparedListener(mp -> {
                 duration.setValue(mp.getDuration());
                 shouldShowMiniPlayer.setValue(true);
-                android.util.Log.d("AudioPlaybackManager", "Media prepared, duration: " + mp.getDuration());
-
-                // 1. Nếu có yêu cầu tua (Resume)
+                
                 if (startPosition >= 0) {
                     mp.seekTo(startPosition);
-                    startPosition = -1; // Reset ngay sau khi dùng
+                    startPosition = -1;
                 }
-
                 play();
             });
 
@@ -167,8 +162,6 @@ public class AudioPlaybackManager {
                 isPlaying.setValue(false);
                 currentPosition.setValue(0);
             });
-
-            mediaPlayer.setOnErrorListener((mp, what, extra) -> false);
 
             mediaPlayer.prepareAsync();
 
@@ -179,64 +172,42 @@ public class AudioPlaybackManager {
 
     private void stopCurrentPlayback() {
         try {
-            // Stop progress updater
             handler.removeCallbacks(progressUpdater);
-
-            // Abandon audio focus if we had it
             abandonAudioFocus();
-
-            // Stop and release current MediaPlayer
             if (mediaPlayer != null) {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.stop();
-                }
+                if (mediaPlayer.isPlaying()) mediaPlayer.stop();
                 mediaPlayer.release();
                 mediaPlayer = null;
             }
-
-            // Reset all state
             isPlaying.setValue(false);
             currentPosition.setValue(0);
             duration.setValue(0);
-
-            android.util.Log.d("AudioPlaybackManager", "Stopped current playback and reset state");
-
         } catch (Exception e) {
-            android.util.Log.e("AudioPlaybackManager", "Error stopping current playback", e);
+            e.printStackTrace();
         }
     }
 
     public void play() {
         try {
             if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
-                // Request audio focus
                 int focusResult = requestAudioFocus();
                 if (focusResult == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                     mediaPlayer.start();
                     isPlaying.setValue(true);
                     handler.post(progressUpdater);
-                    android.util.Log.d("AudioPlaybackManager", "Playback started");
-                } else {
-                    android.util.Log.w("AudioPlaybackManager", "Could not get audio focus");
                 }
-            } else {
-                android.util.Log.w("AudioPlaybackManager", "Cannot start playback - MediaPlayer is null or already playing");
             }
         } catch (Exception e) {
-            android.util.Log.e("AudioPlaybackManager", "Error starting playback", e);
+            e.printStackTrace();
         }
     }
 
     private int requestAudioFocus() {
         if (audioManager == null) return AudioManager.AUDIOFOCUS_REQUEST_FAILED;
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (audioFocusRequest != null) {
-                return audioManager.requestAudioFocus(audioFocusRequest);
-            }
+            if (audioFocusRequest != null) return audioManager.requestAudioFocus(audioFocusRequest);
         } else {
-            return audioManager.requestAudioFocus(focusChangeListener,
-                    AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            return audioManager.requestAudioFocus(focusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
         }
         return AudioManager.AUDIOFOCUS_REQUEST_FAILED;
     }
@@ -247,10 +218,9 @@ public class AudioPlaybackManager {
                 mediaPlayer.pause();
                 isPlaying.setValue(false);
                 handler.removeCallbacks(progressUpdater);
-                android.util.Log.d("AudioPlaybackManager", "Playback paused");
             }
         } catch (Exception e) {
-            android.util.Log.e("AudioPlaybackManager", "Error pausing playback", e);
+            e.printStackTrace();
         }
     }
 
@@ -262,77 +232,23 @@ public class AudioPlaybackManager {
     }
 
     public void stop() {
-        try {
-            handler.removeCallbacks(progressUpdater);
-
-            // Abandon audio focus
-            abandonAudioFocus();
-
-            if (mediaPlayer != null) {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.stop();
-                }
-                mediaPlayer.release();
-                mediaPlayer = null;
-            }
-
-            isPlaying.setValue(false);
-            currentPosition.setValue(0);
-            shouldShowMiniPlayer.setValue(false);
-
-            android.util.Log.d("AudioPlaybackManager", "Stopped and released MediaPlayer");
-
-        } catch (Exception e) {
-            android.util.Log.e("AudioPlaybackManager", "Error stopping playback", e);
-        }
-    }
-
-    public void release() {
-        try {
-            handler.removeCallbacks(progressUpdater);
-
-            // Abandon audio focus
-            abandonAudioFocus();
-
-            if (mediaPlayer != null) {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.stop();
-                }
-                mediaPlayer.release();
-                mediaPlayer = null;
-            }
-
-            isPlaying.setValue(false);
-            shouldShowMiniPlayer.setValue(false);
-
-            android.util.Log.d("AudioPlaybackManager", "Released all resources");
-
-        } catch (Exception e) {
-            android.util.Log.e("AudioPlaybackManager", "Error releasing resources", e);
-        }
+        stopCurrentPlayback();
+        shouldShowMiniPlayer.setValue(false);
     }
 
     private void abandonAudioFocus() {
         if (audioManager != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (audioFocusRequest != null) {
-                    audioManager.abandonAudioFocusRequest(audioFocusRequest);
-                }
+                if (audioFocusRequest != null) audioManager.abandonAudioFocusRequest(audioFocusRequest);
             } else {
                 audioManager.abandonAudioFocus(focusChangeListener);
             }
         }
     }
 
-    public void hideMiniPlayer() {
-        shouldShowMiniPlayer.setValue(false);
-    }
+    public void hideMiniPlayer() { shouldShowMiniPlayer.setValue(false); }
+    public void showMiniPlayer() { shouldShowMiniPlayer.setValue(true); }
 
-    public void showMiniPlayer() {
-        shouldShowMiniPlayer.setValue(true);
-    }
-
-    // Getters for LiveData
     public LiveData<Boolean> getIsPlaying() { return isPlaying; }
     public LiveData<Integer> getCurrentPosition() { return currentPosition; }
     public LiveData<Integer> getDuration() { return duration; }
@@ -342,32 +258,7 @@ public class AudioPlaybackManager {
     public LiveData<String> getCurrentBookId() { return currentBookId; }
     public LiveData<Boolean> getShouldShowMiniPlayer() { return shouldShowMiniPlayer; }
 
-    // Utility methods
-    public boolean hasActivePlayback() {
-        return mediaPlayer != null;
-    }
-
-    public boolean isMediaPlayerReady() {
-        try {
-            return mediaPlayer != null && getDurationValue() > 0;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public int getCurrentPositionValue() {
-        try {
-            return mediaPlayer != null ? mediaPlayer.getCurrentPosition() : 0;
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    public int getDurationValue() {
-        try {
-            return mediaPlayer != null ? mediaPlayer.getDuration() : 0;
-        } catch (Exception e) {
-            return 0;
-        }
-    }
+    public boolean hasActivePlayback() { return mediaPlayer != null; }
+    public int getCurrentPositionValue() { return (mediaPlayer != null) ? mediaPlayer.getCurrentPosition() : 0; }
+    public int getDurationValue() { return (mediaPlayer != null) ? mediaPlayer.getDuration() : 0; }
 }

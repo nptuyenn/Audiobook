@@ -169,14 +169,22 @@ public class LibraryActivity extends AppCompatActivity {
                 break;
             case 2: // Favorites
                 List<FavoriteBook> favs = activityRepo.getFavoritesLive().getValue();
-                if (favs != null) {
-                    Set<String> favIds = new HashSet<>();
-                    for (FavoriteBook fb : favs) if (fb.getBookId() != null) favIds.add(fb.getBookId());
-                    for (Book b : allBooks) {
-                        if (b.getId() != null && favIds.contains(b.getId())) {
-                            b.setFavorite(true);
-                            result.add(b);
-                        }
+
+                if (favs == null || allBooks.isEmpty()) {
+                    emptyState.setVisibility(View.GONE);
+                    rvLibrary.setVisibility(View.GONE);
+                    return;
+                }
+
+                Set<String> favIds = new HashSet<>();
+                for (FavoriteBook fb : favs) {
+                    if (fb.getBookId() != null) favIds.add(fb.getBookId());
+                }
+
+                for (Book b : allBooks) {
+                    if (b.getId() != null && favIds.contains(b.getId())) {
+                        b.setFavorite(true);
+                        result.add(b);
                     }
                 }
                 break;

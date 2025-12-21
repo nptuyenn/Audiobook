@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.audiobook_for_kids.api.ApiClient;
 import com.example.audiobook_for_kids.api.ApiService;
 import com.example.audiobook_for_kids.auth.SessionManager;
+import com.example.audiobook_for_kids.model.Book;
 import com.example.audiobook_for_kids.model.FavoriteBook;
 import com.example.audiobook_for_kids.model.requests.FavoriteRequest;
 import com.example.audiobook_for_kids.model.requests.ProgressRequest;
@@ -25,10 +26,11 @@ public class UserActivityRepository {
     private SessionManager session;
 
     private MutableLiveData<List<FavoriteBook>> favoritesLive = new MutableLiveData<>();
+    private MutableLiveData<List<Book>> recentListensLive = new MutableLiveData<>();
     private MutableLiveData<String> error = new MutableLiveData<>();
 
     private UserActivityRepository(Context ctx) {
-        api = ApiClient.getApiService();
+        api = ApiClient.getClient().create(ApiService.class);
         session = SessionManager.getInstance(ctx);
     }
 
@@ -38,6 +40,7 @@ public class UserActivityRepository {
     }
 
     public LiveData<List<FavoriteBook>> getFavoritesLive() { return favoritesLive; }
+    public LiveData<List<Book>> getRecentListensLive() { return recentListensLive; }
     public LiveData<String> getError() { return error; }
 
     public void clearError() { error.postValue(null); }
@@ -50,7 +53,6 @@ public class UserActivityRepository {
     public void fetchFavorites() {
         String auth = bearer();
         if (auth == null) {
-            // Not logged in: clear favorites silently
             favoritesLive.postValue(null);
             return;
         }
@@ -59,17 +61,10 @@ public class UserActivityRepository {
             public void onResponse(Call<List<FavoriteBook>> call, Response<List<FavoriteBook>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     favoritesLive.postValue(response.body());
-                } else {
-                    // If unauthenticated, clear favorites silently; otherwise show error
-                    int code = response.code();
-                    if (code == 401 || code == 403) {
-                        favoritesLive.postValue(null);
-                    } else {
-                        error.postValue("Không thể tải favorites: " + response.code());
-                    }
+                } else if (response.code() == 401 || response.code() == 403) {
+                    favoritesLive.postValue(null);
                 }
             }
-
             @Override
             public void onFailure(Call<List<FavoriteBook>> call, Throwable t) {
                 error.postValue(t.getMessage());
@@ -77,64 +72,39 @@ public class UserActivityRepository {
         });
     }
 
-    public void setFavorite(String bookId, boolean isFav, Callback<Void> cb) {
+    public void fetchRecentListens() {
         String auth = bearer();
         if (auth == null) {
-            // silently fail: caller should handle UI if user not logged in
-            if (cb != null) cb.onResponse(null, Response.success(null));
+            recentListensLive.postValue(null);
             return;
         }
-        FavoriteRequest req = new FavoriteRequest(bookId, isFav);
-        api.setFavorite(auth, req).enqueue(new Callback<Void>() {
+        api.getRecentListens(auth).enqueue(new Callback<List<Book>>() {
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    // Refresh favorites list
-                    fetchFavorites();
-                } else {
-                    int code = response.code();
-                    if (code == 401 || code == 403) {
-                        // user not authenticated: clear favorites and don't spam UI
-                        favoritesLive.postValue(null);
-                    } else {
-                        error.postValue("Không thể cập nhật yêu thích: " + response.code());
-                    }
+            public void onResponse(Call<List<Book>> call, Response<List<Book>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    recentListensLive.postValue(response.body());
                 }
-                if (cb != null) cb.onResponse(call, response);
             }
-
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
+            public void onFailure(Call<List<Book>> call, Throwable t) {
                 error.postValue(t.getMessage());
-                if (cb != null) cb.onFailure(call, t);
             }
         });
     }
 
-    public void submitReview(String bookId, int rating, String review, Callback<Void> cb) {
+    public void setFavorite(String bookId, boolean isFav, Callback<Void> cb) {
         String auth = bearer();
-        if (auth == null) {
-            // silently ignore if not logged in; caller/UI should prompt login
-            if (cb != null) cb.onResponse(null, Response.success(null));
-            return;
-        }
-        ReviewRequest req = new ReviewRequest(bookId, rating, review);
-        api.submitReview(auth, req).enqueue(cb != null ? cb : new Callback<Void>() {
+        if (auth == null) return;
+        FavoriteRequest req = new FavoriteRequest(bookId, isFav);
+        api.setFavorite(auth, req).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                if (!response.isSuccessful()) {
-                    int code = response.code();
-                    if (code == 401 || code == 403) {
-                        // ignore unauthenticated
-                    } else {
-                        // no-op for success or other server messages
-                    }
-                }
+                if (response.isSuccessful()) fetchFavorites();
+                if (cb != null) cb.onResponse(call, response);
             }
-
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                error.postValue(t.getMessage());
+                if (cb != null) cb.onFailure(call, t);
             }
         });
     }
@@ -146,13 +116,17 @@ public class UserActivityRepository {
         api.updateProgress(auth, req).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                // no-op
+                if (response.isSuccessful()) fetchRecentListens();
             }
-
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                error.postValue(t.getMessage());
-            }
+            public void onFailure(Call<Void> call, Throwable t) {}
         });
+    }
+
+    public void submitReview(String bookId, int rating, String review, Callback<Void> cb) {
+        String auth = bearer();
+        if (auth == null) return;
+        ReviewRequest req = new ReviewRequest(bookId, rating, review);
+        api.submitReview(auth, req).enqueue(cb);
     }
 }
