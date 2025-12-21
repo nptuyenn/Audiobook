@@ -38,9 +38,9 @@ export async function generateStory(topic, systemPrompt = defaultSystemPrompt) {
         }
       ],
       generationConfig: {
-        maxOutputTokens: 1700, 
-        temperature: 0.7,      
-        topP: 0.8,
+        maxOutputTokens: 2000, 
+        temperature: 0.8,      
+        topP: 0.95,
         candidateCount: 1
       }
     };
