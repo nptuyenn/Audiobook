@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -63,6 +64,7 @@ public class PlayerActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable updateSeekBar;
+    private Runnable autoProgressUpdate; // Vòng lặp cập nhật server
     private boolean isPlaying = false;
     private float currentSpeed = 1.0f;
 
@@ -71,7 +73,9 @@ public class PlayerActivity extends AppCompatActivity {
     // audio url from intent
     private String audioUrl = null;
     private String bookId = null;
+    private int currentChapterOrder = 1; // Theo dõi chương hiện tại
     private boolean shouldAutoPlay = false;
+    private boolean isAiStory = false; // Flag phân biệt truyện AI
 
     // repository & adapter
     private AudioRepository audioRepository;
@@ -122,13 +126,17 @@ public class PlayerActivity extends AppCompatActivity {
             if (msg != null) Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         });
 
-        if (bookId != null && !bookId.isEmpty()) {
+        // CHỈ GỌI FETCH CHAPTERS NẾU KHÔNG PHẢI TRUYỆN AI (TRÁNH LỖI 404)
+        if (bookId != null && !bookId.isEmpty() && !isAiStory) {
             audioRepository.fetchChapters(bookId);
         }
 
         // Initialize AudioPlaybackManager
         audioManager = AudioPlaybackManager.getInstance();
         audioManager.initialize(this);
+
+        // Khởi tạo timer cập nhật tiến trình
+        setupAutoProgressTimer();
 
         if (isFromMiniPlayer && audioManager.hasActivePlayback()) {
             syncWithAudioManager();
@@ -166,6 +174,21 @@ public class PlayerActivity extends AppCompatActivity {
 
         btnChapters = findViewById(R.id.btn_chapters);
         btnSpeed = findViewById(R.id.btn_speed);
+    }
+
+    // Hàm quản lý vòng lặp gửi dữ liệu lên server
+    private void setupAutoProgressTimer() {
+        autoProgressUpdate = new Runnable() {
+            @Override
+            public void run() {
+                if (mediaPlayer != null && isPlaying && bookId != null) {
+                    Log.d("PlayerActivity", "Đang gửi tiến trình nghe: BookId=" + bookId + ", Pos=" + mediaPlayer.getCurrentPosition());
+                    // Bước 3: Định kỳ gửi tiến trình (mỗi 10s)
+                    activityRepo.updateProgress(bookId, currentChapterOrder, mediaPlayer.getCurrentPosition());
+                    handler.postDelayed(this, 10000); 
+                }
+            }
+        };
     }
 
     private void setupMediaPlayer() {
@@ -211,6 +234,7 @@ public class PlayerActivity extends AppCompatActivity {
             mediaPlayer.setOnCompletionListener(mp -> {
                 isPlaying = false;
                 btnPlayPause.setImageResource(R.drawable.ic_play_arrow);
+                handler.removeCallbacks(autoProgressUpdate); // Dừng timer khi xong
             });
 
         } catch (Exception e) {
@@ -285,6 +309,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         // Check if should auto-play (từ detail page)
         shouldAutoPlay = intent.getBooleanExtra("auto_play", false);
+        
+        // NHẬN FLAG AI TỪ DETAIL PAGE
+        isAiStory = intent.getBooleanExtra("is_ai", false);
 
         tvPlayerTitle.setText(title != null ? title : "Đang tải...");
         tvPlayerAuthor.setText(author != null ? author : "KidoBook");
@@ -457,14 +484,31 @@ public class PlayerActivity extends AppCompatActivity {
         btnSpeed.setOnClickListener(v -> showSpeedDialog());
 
         // Xử lý nút Chương -> show bottom sheet list
-        btnChapters.setOnClickListener(v -> showChaptersBottomSheet());
+        btnChapters.setOnClickListener(v -> {
+            if (isAiStory) {
+                Toast.makeText(this, "Truyện AI không có mục lục", Toast.LENGTH_SHORT).show();
+            } else {
+                showChaptersBottomSheet();
+            }
+        });
     }
 
     private void playAudio() {
+        if (mediaPlayer == null) return;
         mediaPlayer.start();
         isPlaying = true;
         btnPlayPause.setImageResource(R.drawable.ic_pause); // Đổi icon thành Pause
         handler.post(updateSeekBar);
+
+        // Bước 1: Gọi start-listening ngay khi bắt đầu phát
+        if (bookId != null && activityRepo != null) {
+            Log.d("PlayerActivity", "Bắt đầu ghi nhận nghe: BookId=" + bookId);
+            activityRepo.startListening(bookId);
+        }
+
+        // Bước 3: Khởi động vòng lặp cập nhật tiến trình (mỗi 10s)
+        handler.removeCallbacks(autoProgressUpdate);
+        handler.post(autoProgressUpdate);
 
         // Save this book as recently played
         if (bookId != null && !bookId.isEmpty()) {
@@ -498,10 +542,12 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void pauseAudio() {
+        if (mediaPlayer == null) return;
         mediaPlayer.pause();
         isPlaying = false;
         btnPlayPause.setImageResource(R.drawable.ic_play_arrow); // Đổi icon thành Play
         handler.removeCallbacks(updateSeekBar);
+        handler.removeCallbacks(autoProgressUpdate); // Dừng timer khi pause
     }
 
     private void updateUIImmediate() {
@@ -557,7 +603,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         // Send progress to backend when user leaves
         if (mediaPlayer != null && bookId != null) {
-            activityRepo.updateProgress(bookId, 1, mediaPlayer.getCurrentPosition());
+            activityRepo.updateProgress(bookId, currentChapterOrder, mediaPlayer.getCurrentPosition());
         }
     }
 
@@ -567,12 +613,13 @@ public class PlayerActivity extends AppCompatActivity {
         // Send final progress only if we still have media player (not transferred)
         if (mediaPlayer != null) {
             if (bookId != null) {
-                activityRepo.updateProgress(bookId, 1, mediaPlayer.getCurrentPosition());
+                activityRepo.updateProgress(bookId, currentChapterOrder, mediaPlayer.getCurrentPosition());
             }
             mediaPlayer.release();
             mediaPlayer = null;
         }
         handler.removeCallbacks(updateSeekBar);
+        handler.removeCallbacks(autoProgressUpdate);
     }
 
     // New: show bottom sheet with chapter list
@@ -586,8 +633,9 @@ public class PlayerActivity extends AppCompatActivity {
             try {
                 if (mediaPlayer != null) {
                     // Save current progress before switching
-                    if (bookId != null) activityRepo.updateProgress(bookId, chapter.getChapter(), mediaPlayer.getCurrentPosition());
+                    if (bookId != null) activityRepo.updateProgress(bookId, currentChapterOrder, mediaPlayer.getCurrentPosition());
 
+                    currentChapterOrder = chapter.getChapter(); // Cập nhật số chương
                     mediaPlayer.reset();
                     mediaPlayer.setDataSource(chapter.getAudioUrl());
                     mediaPlayer.prepareAsync();
@@ -637,6 +685,7 @@ public class PlayerActivity extends AppCompatActivity {
                 mediaPlayer = null;
 
                 handler.removeCallbacks(updateSeekBar);
+                handler.removeCallbacks(autoProgressUpdate);
             }
         } catch (Exception e) {
             e.printStackTrace();

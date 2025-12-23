@@ -42,9 +42,10 @@
             android:rating="0"
             android:scaleX="1.2"
             android:scaleY="1.2"
-            android:theme="@style/Widget.AppCompat.RatingBar.Indicator"
+            android:isIndicator="false"
             android:progressTint="#FFC107"
             android:secondaryProgressTint="#FFE082" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

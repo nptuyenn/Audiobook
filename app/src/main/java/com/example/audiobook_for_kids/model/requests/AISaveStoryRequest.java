@@ -1,17 +1,21 @@
 package com.example.audiobook_for_kids.model.requests;
 
+import com.google.gson.annotations.SerializedName;
+
 public class AISaveStoryRequest {
     private String title;
     private String text;
-    private String audioBase64;
+    
+    @SerializedName("audioUrl")
+    private String audioUrl;
 
-    public AISaveStoryRequest(String title, String text, String audioBase64) {
+    public AISaveStoryRequest(String title, String text, String audioUrl) {
         this.title = title;
         this.text = text;
-        this.audioBase64 = audioBase64;
+        this.audioUrl = audioUrl;
     }
 
     public String getTitle() { return title; }
     public String getText() { return text; }
-    public String getAudioBase64() { return audioBase64; }
+    public String getAudioUrl() { return audioUrl; }
 }

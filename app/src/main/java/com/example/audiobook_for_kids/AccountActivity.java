@@ -2,12 +2,15 @@ package com.example.audiobook_for_kids;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageButton;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -27,6 +30,9 @@ public class AccountActivity extends AppCompatActivity {
     private MaterialButton btnHelp;
     private MaterialButton btnLogout;
 
+    // Activity Result Launcher cho việc chọn ảnh
+    private ActivityResultLauncher<String> galleryLauncher;
+
     // Mini player views
     private CardView layoutMiniPlayer;
     private ImageView ivMiniCover;
@@ -38,6 +44,7 @@ public class AccountActivity extends AppCompatActivity {
     private static final String PREF_NAME = "AudiobookPrefs";
     private static final String KEY_USER_NAME = "user_name";
     private static final String KEY_USER_EMAIL = "user_email";
+    private static final String KEY_PROFILE_IMAGE = "profile_image_uri";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +68,24 @@ public class AccountActivity extends AppCompatActivity {
 
         // Setup mini player
         setupMiniPlayer();
+
+        // Khởi tạo trình chọn ảnh
+        setupPhotoPicker();
+    }
+
+    private void setupPhotoPicker() {
+        galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            uri -> {
+                if (uri != null) {
+                    // Lưu URI vào SharedPreferences
+                    sharedPreferences.edit().putString(KEY_PROFILE_IMAGE, uri.toString()).apply();
+                    // Hiển thị ảnh ngay lập tức
+                    loadProfileImage(uri.toString());
+                    Toast.makeText(this, "Đã cập nhật ảnh đại diện", Toast.LENGTH_SHORT).show();
+                }
+            }
+        );
     }
 
     @Override
@@ -88,9 +113,23 @@ public class AccountActivity extends AppCompatActivity {
         // Load dữ liệu người dùng từ SharedPreferences
         String userName = sharedPreferences.getString(KEY_USER_NAME, "Người dùng");
         String userEmail = sharedPreferences.getString(KEY_USER_EMAIL, "user@kidobook.com");
+        String imageUri = sharedPreferences.getString(KEY_PROFILE_IMAGE, null);
 
         tvUserName.setText(userName);
         tvUserEmail.setText(userEmail);
+        loadProfileImage(imageUri);
+    }
+
+    private void loadProfileImage(String imageUri) {
+        if (imageUri != null) {
+            Glide.with(this)
+                .load(Uri.parse(imageUri))
+                .placeholder(R.drawable.ic_account_placeholder)
+                .circleCrop()
+                .into(ivProfilePicture);
+        } else {
+            ivProfilePicture.setImageResource(R.drawable.ic_account_placeholder);
+        }
     }
 
     private void setupClickListeners() {
@@ -126,7 +165,10 @@ public class AccountActivity extends AppCompatActivity {
                 .create();
 
         // Handle change photo button
-        btnChangePhoto.setOnClickListener(v -> changeProfilePicture());
+        btnChangePhoto.setOnClickListener(v -> {
+            changeProfilePicture();
+            dialog.dismiss();
+        });
 
         // Handle save button
         MaterialButton btnSave = dialogView.findViewById(R.id.btn_dialog_save);
@@ -314,7 +356,7 @@ public class AccountActivity extends AppCompatActivity {
                 "• Lưu truyện vào thư viện\n\n" +
                 "📞 Hỗ trợ:\n" +
                 "• Email: support@kidobook.com\n" +
-                "• Hotline: 1900-1234\n\n" +
+                "• Hotline: 0358833785\n\n" +
                 "📋 Phiên bản: 1.0.0";
 
         new MaterialAlertDialogBuilder(this)
@@ -368,23 +410,19 @@ public class AccountActivity extends AppCompatActivity {
     }
 
     private void changeProfilePicture() {
-        String[] options = {"Chụp ảnh", "Chọn từ thư viện", "Sử dụng avatar mặc định"};
+        String[] options = {"Chọn từ thư viện", "Xóa ảnh đại diện"};
 
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Thay đổi ảnh đại diện")
                 .setItems(options, (dialog, which) -> {
                     switch (which) {
                         case 0:
-                            // TODO: Open camera
-                            Toast.makeText(this, "Chức năng chụp ảnh đang phát triển", Toast.LENGTH_SHORT).show();
+                            galleryLauncher.launch("image/*");
                             break;
                         case 1:
-                            // TODO: Open gallery
-                            Toast.makeText(this, "Chức năng chọn ảnh đang phát triển", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 2:
-                            // Reset to default avatar
-                            Toast.makeText(this, "Đã đặt lại ảnh đại diện mặc định", Toast.LENGTH_SHORT).show();
+                            sharedPreferences.edit().remove(KEY_PROFILE_IMAGE).apply();
+                            ivProfilePicture.setImageResource(R.drawable.ic_account_placeholder);
+                            Toast.makeText(this, "Đã xóa ảnh đại diện", Toast.LENGTH_SHORT).show();
                             break;
                     }
                 })

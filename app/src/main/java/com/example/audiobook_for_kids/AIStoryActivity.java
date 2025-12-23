@@ -3,10 +3,10 @@ package com.example.audiobook_for_kids;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +23,8 @@ import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.audiobook_for_kids.adapter.ChatAdapter;
@@ -33,16 +35,26 @@ import com.example.audiobook_for_kids.model.ChatMessage;
 import com.example.audiobook_for_kids.model.requests.AIChatRequest;
 import com.example.audiobook_for_kids.model.requests.AISaveStoryRequest;
 import com.example.audiobook_for_kids.model.requests.AIStoryRequest;
+import com.example.audiobook_for_kids.model.requests.AIVoiceRequest;
 import com.example.audiobook_for_kids.model.responses.AIChatResponse;
 import com.example.audiobook_for_kids.model.responses.AIStoryResponse;
+import com.example.audiobook_for_kids.model.responses.TranscribeResponse;
 import com.example.audiobook_for_kids.service.AudioPlaybackManager;
+import com.example.audiobook_for_kids.utils.Constants;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 import com.bumptech.glide.Glide;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -51,6 +63,11 @@ public class AIStoryActivity extends AppCompatActivity {
 
     private static final String TAG = "AIStoryActivity";
     private static final int REQUEST_RECORD_AUDIO = 100;
+    
+    // Audio Configuration for Azure STT
+    private static final int SAMPLE_RATE = 16000;
+    private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
+    private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
     
     private EditText etPrompt, etChatMessage;
     private Button btnGenerate, btnStopVoice;
@@ -64,13 +81,20 @@ public class AIStoryActivity extends AppCompatActivity {
     private ChatAdapter chatAdapter;
     private List<ChatMessage> chatMessages = new ArrayList<>();
     
-    private String currentAudioBase64, currentStoryText, currentStoryTitle;
-    private File tempAudioFile;
-    private SpeechRecognizer speechRecognizer;
+    private String currentAudioUrl, currentStoryText, currentStoryTitle;
+    private AudioRecord audioRecord;
+    private MediaRecorder mediaRecorder; 
+    private Thread recordingThread;
+    private String recordFilePath;
     private AudioPlaybackManager audioManager;
     private boolean isRecordingForStory = true;
+    private boolean isRecording = false;
 
-    // Mini player views (for setupMiniPlayer)
+    // Navigation Drawer views
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+
+    // Mini player views
     private CardView layoutMiniPlayer;
     private ImageView ivMiniCover;
     private TextView tvMiniTitle, tvMiniAuthor;
@@ -84,13 +108,17 @@ public class AIStoryActivity extends AppCompatActivity {
         initViews();
         setupChat();
         setupListeners();
+        setupDrawerListeners();
         setupMiniPlayer();
         setupBottomNavigation();
         
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+        recordFilePath = getExternalCacheDir().getAbsolutePath() + "/voice_input.m4a";
     }
 
     private void initViews() {
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
         etPrompt = findViewById(R.id.et_prompt);
         btnGenerate = findViewById(R.id.btn_generate);
         btnMicStory = findViewById(R.id.btn_mic_story);
@@ -130,8 +158,7 @@ public class AIStoryActivity extends AppCompatActivity {
 
     private void setupListeners() {
         findViewById(R.id.btn_menu).setOnClickListener(v -> {
-            if (containerStoryMode.getVisibility() == View.VISIBLE) switchToChatMode();
-            else switchToStoryMode();
+            drawerLayout.openDrawer(GravityCompat.START);
         });
 
         btnGenerate.setOnClickListener(v -> generateStory());
@@ -143,6 +170,23 @@ public class AIStoryActivity extends AppCompatActivity {
         btnMicChat.setOnClickListener(v -> startVoiceInput(false));
         btnStopVoice.setOnClickListener(v -> stopVoiceInput());
         btnSend.setOnClickListener(v -> sendChatMessage());
+    }
+
+    private void setupDrawerListeners() {
+        View headerView = navigationView.getHeaderView(0);
+        
+        View btnNavStory = headerView.findViewById(R.id.btn_nav_story);
+        View btnNavChat = headerView.findViewById(R.id.btn_nav_chat);
+
+        btnNavStory.setOnClickListener(v -> {
+            switchToStoryMode();
+            drawerLayout.closeDrawer(GravityCompat.START);
+        });
+
+        btnNavChat.setOnClickListener(v -> {
+            switchToChatMode();
+            drawerLayout.closeDrawer(GravityCompat.START);
+        });
     }
 
     private void switchToStoryMode() {
@@ -165,88 +209,194 @@ public class AIStoryActivity extends AppCompatActivity {
 
         isRecordingForStory = isStory;
         layoutVoiceOverlay.setVisibility(View.VISIBLE);
-        tvVoiceStatus.setText("Hãy nói gì đó nhé!");
+        tvVoiceStatus.setText("Gấu Nhỏ đang lắng nghe...");
+        
+        startRecordingCompressed();
+    }
 
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi-VN");
-
-        speechRecognizer.setRecognitionListener(new RecognitionListener() {
-            @Override public void onReadyForSpeech(Bundle params) { tvVoiceStatus.setText("Đang nghe..."); }
-            @Override public void onResults(Bundle results) {
-                layoutVoiceOverlay.setVisibility(View.GONE);
-                ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                if (matches != null && !matches.isEmpty()) {
-                    String text = matches.get(0);
-                    if (isRecordingForStory) etPrompt.setText(text);
-                    else etChatMessage.setText(text);
-                }
-            }
-            @Override public void onError(int error) {
-                layoutVoiceOverlay.setVisibility(View.GONE);
-                Log.e(TAG, "Speech Error: " + error);
-                Toast.makeText(AIStoryActivity.this, "Gấu Nhỏ không nghe rõ, bé nói lại nhé!", Toast.LENGTH_SHORT).show();
-            }
-            @Override public void onBeginningOfSpeech() {}
-            @Override public void onRmsChanged(float rmsdB) {}
-            @Override public void onBufferReceived(byte[] buffer) {}
-            @Override public void onEndOfSpeech() { layoutVoiceOverlay.setVisibility(View.GONE); }
-            @Override public void onPartialResults(Bundle partialResults) {}
-            @Override public void onEvent(int eventType, Bundle params) {}
-        });
-        speechRecognizer.startListening(intent);
+    private void startRecordingCompressed() {
+        try {
+            mediaRecorder = new MediaRecorder();
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mediaRecorder.setAudioSamplingRate(16000);
+            mediaRecorder.setAudioEncodingBitRate(32000); 
+            mediaRecorder.setOutputFile(recordFilePath);
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+            isRecording = true;
+        } catch (IOException e) {
+            Log.e(TAG, "Lỗi ghi âm", e);
+            layoutVoiceOverlay.setVisibility(View.GONE);
+        }
     }
 
     private void stopVoiceInput() {
-        speechRecognizer.stopListening();
+        if (isRecording && mediaRecorder != null) {
+            try {
+                mediaRecorder.stop();
+                mediaRecorder.release();
+                mediaRecorder = null;
+                isRecording = false;
+                sendVoiceToServer();
+            } catch (Exception e) {
+                Log.e(TAG, "Lỗi dừng ghi âm", e);
+            }
+        }
         layoutVoiceOverlay.setVisibility(View.GONE);
+    }
+
+    private void sendVoiceToServer() {
+        String base64Audio = encodeFileToBase64(recordFilePath);
+        if (base64Audio == null) return;
+
+        if (isRecordingForStory) progressBar.setVisibility(View.VISIBLE);
+        else progressChat.setVisibility(View.VISIBLE);
+
+        ApiService api = ApiClient.getClient().create(ApiService.class);
+        String token = "Bearer " + SessionManager.getInstance(this).getToken();
+
+        api.generateAIStoryFromVoice(token, new AIVoiceRequest(base64Audio)).enqueue(new Callback<TranscribeResponse>() {
+            @Override
+            public void onResponse(Call<TranscribeResponse> call, Response<TranscribeResponse> response) {
+                progressBar.setVisibility(View.GONE);
+                progressChat.setVisibility(View.GONE);
+                if (response.isSuccessful() && response.body() != null) {
+                    String resultText = response.body().getTranscribedText();
+                    if (resultText != null && !resultText.isEmpty()) {
+                        if (isRecordingForStory) etPrompt.setText(resultText);
+                        else etChatMessage.setText(resultText);
+                        Toast.makeText(AIStoryActivity.this, "Gấu Nhỏ nghe được: " + resultText, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(AIStoryActivity.this, "Gấu Nhỏ không nghe rõ, bé nói lại nhé", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override public void onFailure(Call<TranscribeResponse> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                progressChat.setVisibility(View.GONE);
+                Log.e(TAG, "Lỗi STT", t);
+            }
+        });
+    }
+
+    private String encodeFileToBase64(String path) {
+        try {
+            File file = new File(path);
+            byte[] bytes = new byte[(int) file.length()];
+            FileInputStream fis = new FileInputStream(file);
+            fis.read(bytes);
+            fis.close();
+            // Đã có import android.util.Base64 ở phía trên
+            return Base64.encodeToString(bytes, Base64.NO_WRAP);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     private void generateStory() {
         String prompt = etPrompt.getText().toString().trim();
-        if (prompt.isEmpty()) return;
+        if (prompt.isEmpty()) {
+            Toast.makeText(this, "Hãy nói hoặc nhập gì đó để Gấu Nhỏ kể chuyện nhé!", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         progressBar.setVisibility(View.VISIBLE);
         cardResult.setVisibility(View.GONE);
 
         ApiService api = ApiClient.getClient().create(ApiService.class);
         String token = "Bearer " + SessionManager.getInstance(this).getToken();
-        
+
         api.generateAIStory(token, new AIStoryRequest(prompt, "Truyện AI")).enqueue(new Callback<AIStoryResponse>() {
             @Override
             public void onResponse(Call<AIStoryResponse> call, Response<AIStoryResponse> response) {
-                progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     currentStoryText = response.body().getText();
-                    currentAudioBase64 = response.body().getAudioBase64();
                     currentStoryTitle = "Truyện: " + prompt;
-                    
+
                     tvStoryTitle.setText(currentStoryTitle);
                     tvStoryContent.setText(currentStoryText);
                     cardResult.setVisibility(View.VISIBLE);
-                    saveAudioToTempFile(currentAudioBase64);
+
+                    currentAudioUrl = response.body().getAudioUrl();
+                    if (currentAudioUrl == null || currentAudioUrl.isEmpty()) {
+                        generateStoryAudio(currentStoryText);
+                    } else {
+                        progressBar.setVisibility(View.GONE);
+                    }
                 }
             }
             @Override public void onFailure(Call<AIStoryResponse> call, Throwable t) { progressBar.setVisibility(View.GONE); }
         });
     }
 
+    private void generateStoryAudio(String storyText) {
+        String token = "Bearer " + SessionManager.getInstance(this).getToken();
+        ApiService api = ApiClient.getClient().create(ApiService.class);
+
+        api.generateStoryAudio(token, new HashMap<String, String>() {{
+            put("storyContent", storyText);
+        }}).enqueue(new Callback<Map<String, String>>() {
+            @Override
+            public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
+                progressBar.setVisibility(View.GONE);
+                if (response.isSuccessful() && response.body() != null) {
+                    currentAudioUrl = response.body().get("audioUrl");
+                }
+            }
+            @Override
+            public void onFailure(Call<Map<String, String>> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+            }
+        });
+    }
+
     private void saveStoryToLibrary() {
-        if (currentStoryText == null || currentAudioBase64 == null) return;
+        if (currentStoryText == null || currentAudioUrl == null) {
+            Toast.makeText(this, "Vui lòng đợi âm thanh chuẩn bị xong", Toast.LENGTH_SHORT).show();
+            return;
+        }
         
         String token = "Bearer " + SessionManager.getInstance(this).getToken();
         ApiService api = ApiClient.getClient().create(ApiService.class);
-        
-        AISaveStoryRequest req = new AISaveStoryRequest(currentStoryTitle, currentStoryText, currentAudioBase64);
+
+        AISaveStoryRequest req = new AISaveStoryRequest(currentStoryTitle, currentStoryText, currentAudioUrl);
         api.saveAIStory(token, req).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(AIStoryActivity.this, "Đã lưu vào thư viện!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(AIStoryActivity.this, "Lưu thất bại", Toast.LENGTH_SHORT).show();
                 }
             }
-            @Override public void onFailure(Call<Void> call, Throwable t) {}
+            @Override public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(AIStoryActivity.this, "Lỗi kết nối server", Toast.LENGTH_SHORT).show();
+            }
         });
+    }
+
+    private void playGeneratedAudio() {
+        if (currentAudioUrl == null || currentAudioUrl.isEmpty()) {
+            Toast.makeText(this, "Chưa có âm thanh, vui lòng đợi...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String fullUrl = getFullUrl(currentAudioUrl);
+        Log.d(TAG, "Đang phát audio từ: " + fullUrl);
+
+        if (audioManager != null) {
+            audioManager.setAudioSource(fullUrl, currentStoryTitle, "AI Gen", "", "");
+        }
+    }
+
+    private String getFullUrl(String url) {
+        if (url == null || url.isEmpty() || url.startsWith("http")) return url;
+        String baseUrl = Constants.BASE_URL;
+        if (!baseUrl.endsWith("/") && !url.startsWith("/")) baseUrl += "/";
+        else if (baseUrl.endsWith("/") && url.startsWith("/")) url = url.substring(1);
+        return baseUrl + url;
     }
 
     private void sendChatMessage() {
@@ -276,22 +426,6 @@ public class AIStoryActivity extends AppCompatActivity {
         chatMessages.add(new ChatMessage(text, isUser));
         chatAdapter.notifyItemInserted(chatMessages.size() - 1);
         rvChat.scrollToPosition(chatMessages.size() - 1);
-    }
-
-    private void saveAudioToTempFile(String base64) {
-        try {
-            byte[] data = Base64.decode(base64, Base64.DEFAULT);
-            tempAudioFile = File.createTempFile("ai_story", ".mp3", getCacheDir());
-            try (FileOutputStream fos = new FileOutputStream(tempAudioFile)) {
-                fos.write(data);
-            }
-        } catch (IOException e) { e.printStackTrace(); }
-    }
-
-    private void playGeneratedAudio() {
-        if (tempAudioFile != null && tempAudioFile.exists()) {
-            audioManager.playLocalFile(tempAudioFile.getAbsolutePath(), currentStoryTitle, "AI Gấu Nhỏ");
-        }
     }
 
     private void setupMiniPlayer() {
@@ -339,6 +473,8 @@ public class AIStoryActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (speechRecognizer != null) speechRecognizer.destroy();
+        if (mediaRecorder != null) {
+            mediaRecorder.release();
+        }
     }
 }

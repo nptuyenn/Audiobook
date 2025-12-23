@@ -3,6 +3,7 @@ package com.example.audiobook_for_kids;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -92,15 +93,16 @@ public class MainActivity extends AppCompatActivity {
             markFavoritesInAdapter(favs);
         });
 
-        activityRepo.getRecentListensLive().observe(this, recentBooks -> {
-            if (recentBooks != null) {
+        // SỬA LỖI: Sử dụng getHistoryLive() thay vì getRecentListensLive()
+        activityRepo.getHistoryLive().observe(this, recentBooks -> {
+            if (recentBooks != null && !recentBooks.isEmpty()) {
                 featuredAdapter.setBooks(recentBooks.stream().limit(5).collect(Collectors.toList()));
             }
         });
 
         bookRepository.fetchBooks();
         activityRepo.fetchFavorites();
-        activityRepo.fetchRecentListens();
+        activityRepo.fetchHistory(); // SỬA LỖI: Gọi fetchHistory()
     }
 
     private void updateRecyclerData(List<Book> allBooks) {
@@ -130,8 +132,11 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         boolean isLogged = prefs.getBoolean("is_logged_in", false);
         btn_login.setVisibility(isLogged ? Button.GONE : Button.VISIBLE);
-        activityRepo.fetchFavorites();
-        activityRepo.fetchRecentListens();
+        
+        if (activityRepo != null) {
+            activityRepo.fetchFavorites();
+            activityRepo.fetchHistory(); // SỬA LỖI: Làm mới lịch sử
+        }
     }
 
     private void markFavoritesInAdapter(List<FavoriteBook> favs) {
@@ -174,6 +179,8 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("book_cover", book.getCoverUrl());
         intent.putExtra("book_description", book.getDescription());
         intent.putExtra("book_rating", book.getAvgRating());
+        intent.putExtra("is_ai", book.isAi());
+        intent.putExtra("audio_url", book.getAudioUrl());
         startActivity(intent);
     }
 
