@@ -51,7 +51,7 @@
         android:textColor="#283E50"
         app:strokeColor="#D2E1AA"
         app:cornerRadius="12dp"
-        app:icon="@drawable/ic_menu"
+        app:icon="@drawable/ic_ai_placeholder"
         app:iconTint="#8BC34A"/>
 
     <com.google.android.material.button.MaterialButton
@@ -60,13 +60,13 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_marginTop="16dp"
-        android:text="Chat với Gấu Nhỏ"
+        android:text="Trò chuyện với Gấu Nhỏ"
         android:textAllCaps="false"
         android:textSize="16sp"
         android:textColor="#283E50"
         app:strokeColor="#D2E1AA"
         app:cornerRadius="12dp"
-        app:icon="@drawable/ic_send"
+        app:icon="@drawable/ic_chat"
         app:iconTint="#FF6B6B"/>
 
 </LinearLayout>

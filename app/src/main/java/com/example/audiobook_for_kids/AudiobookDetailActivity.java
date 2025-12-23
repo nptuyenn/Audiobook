@@ -2,15 +2,16 @@ package com.example.audiobook_for_kids;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.google.android.material.button.MaterialButton;
@@ -20,8 +21,8 @@ import com.example.audiobook_for_kids.model.AudioChapter;
 import com.example.audiobook_for_kids.repository.AudioRepository;
 import com.example.audiobook_for_kids.repository.BookRepository;
 import com.example.audiobook_for_kids.repository.UserActivityRepository;
-import com.example.audiobook_for_kids.model.FavoriteBook;
 import com.example.audiobook_for_kids.model.Book;
+import com.example.audiobook_for_kids.service.AudioPlaybackManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +30,8 @@ import com.bumptech.glide.Glide;
 
 public class AudiobookDetailActivity extends AppCompatActivity {
 
-    private static final String TAG = "AudiobookDetail";
     private ImageView ivCover, btnBack, btnFavorite;
-    private TextView tvTitle, tvAuthor, tvDuration, tvRating, tvDescription, tvLabelChapters;
+    private TextView tvTitle, tvAuthor, tvRating, tvDescription, tvLabelChapters;
     private MaterialButton btnPlay;
     private RecyclerView rvEpisodes;
 
@@ -44,6 +44,12 @@ public class AudiobookDetailActivity extends AppCompatActivity {
     private List<AudioChapter> currentChapters = new ArrayList<>();
     private UserActivityRepository activityRepo;
 
+    private CardView layoutMiniPlayer;
+    private ImageView ivMiniCover;
+    private TextView tvMiniTitle, tvMiniAuthor;
+    private ImageButton btnMiniPlay;
+    private AudioPlaybackManager audioManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,8 +57,8 @@ public class AudiobookDetailActivity extends AppCompatActivity {
 
         initViews();
         loadDataFromIntent();
-        setupLogicByStoryType(); 
-
+        setupLogicByStoryType();
+        setupMiniPlayer();
         activityRepo = UserActivityRepository.getInstance(this);
         
         activityRepo.getFavoritesLive().observe(this, favs -> {
@@ -75,6 +81,7 @@ public class AudiobookDetailActivity extends AppCompatActivity {
 
         activityRepo.fetchFavorites();
         setupClickListeners();
+
     }
 
     private void initViews() {
@@ -83,7 +90,6 @@ public class AudiobookDetailActivity extends AppCompatActivity {
         btnFavorite = findViewById(R.id.btn_favorite);
         tvTitle = findViewById(R.id.tv_title);
         tvAuthor = findViewById(R.id.tv_author);
-        tvDuration = findViewById(R.id.tv_duration);
         tvRating = findViewById(R.id.tv_rating);
         tvDescription = findViewById(R.id.tv_description);
         btnPlay = findViewById(R.id.btn_play);
@@ -235,5 +241,44 @@ public class AudiobookDetailActivity extends AppCompatActivity {
         boolean newState = !isFavorite;
         setFavoriteUI(newState, true);
         activityRepo.setFavorite(currentBookId, newState, null);
+    }
+
+    private void setupMiniPlayer() {
+        layoutMiniPlayer = findViewById(R.id.layout_mini_player);
+        ivMiniCover = findViewById(R.id.iv_mini_cover);
+        tvMiniTitle = findViewById(R.id.tv_mini_title);
+        tvMiniAuthor = findViewById(R.id.tv_mini_author);
+        btnMiniPlay = findViewById(R.id.btn_mini_play);
+        audioManager = AudioPlaybackManager.getInstance();
+        audioManager.initialize(this);
+        audioManager.getShouldShowMiniPlayer().observe(this, shouldShow -> {
+            if (shouldShow != null) layoutMiniPlayer.setVisibility(shouldShow ? CardView.VISIBLE : CardView.GONE);
+        });
+        audioManager.getCurrentTitle().observe(this, title -> { if (title != null) tvMiniTitle.setText(title); });
+        audioManager.getCurrentAuthor().observe(this, author -> { if (author != null) tvMiniAuthor.setText(author); });
+        audioManager.getCurrentCover().observe(this, coverUrl -> {
+            if (coverUrl != null && !coverUrl.isEmpty()) {
+                Glide.with(this).load(coverUrl).placeholder(R.drawable.ic_headphone_placeholder).into(ivMiniCover);
+            }
+        });
+        audioManager.getIsPlaying().observe(this, isPlaying -> {
+            if (isPlaying != null) btnMiniPlay.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play_arrow);
+        });
+        btnMiniPlay.setOnClickListener(v -> {
+            Boolean playing = audioManager.getIsPlaying().getValue();
+            if (playing != null && playing) audioManager.pause(); else audioManager.play();
+        });
+        layoutMiniPlayer.setOnClickListener(v -> {
+            String bookId = audioManager.getCurrentBookId().getValue();
+            if (bookId != null && !bookId.isEmpty()) {
+                Intent intent = new Intent(this, PlayerActivity.class);
+                intent.putExtra("book_id", bookId);
+                intent.putExtra("book_title", audioManager.getCurrentTitle().getValue());
+                intent.putExtra("book_author", audioManager.getCurrentAuthor().getValue());
+                intent.putExtra("book_cover", audioManager.getCurrentCover().getValue());
+                intent.putExtra("from_mini_player", true);
+                startActivity(intent);
+            }
+        });
     }
 }

@@ -8,21 +8,21 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.audiobook_for_kids.adapter.AudiobookAdapter;
 import com.example.audiobook_for_kids.model.Book;
 import com.example.audiobook_for_kids.repository.BookRepository;
+import com.example.audiobook_for_kids.service.AudioPlaybackManager;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SearchActivity extends AppCompatActivity {
@@ -35,6 +35,12 @@ public class SearchActivity extends AppCompatActivity {
     private TextView tvRecentSearch, tvSearchSuggest;
     private RecyclerView rvRecentSearches; // Reuse rv_topic_cards for recent search text
     private View layoutTopicCardsRoot;
+
+    private CardView layoutMiniPlayer;
+    private ImageView ivMiniCover;
+    private TextView tvMiniTitle, tvMiniAuthor;
+    private ImageButton btnMiniPlay;
+    private AudioPlaybackManager audioManager;
 
     private static final String PREFS_NAME = "SearchPrefs";
     private static final String KEY_RECENT_SEARCHES = "recent_searches";
@@ -56,6 +62,7 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
         BookRepository.getInstance().fetchBooks();
+        setupMiniPlayer();
     }
 
     private void initViews() {
@@ -180,5 +187,44 @@ public class SearchActivity extends AppCompatActivity {
         intent.putExtra(TopicActivity.EXTRA_TOPIC_TYPE, topicType);
         intent.putExtra(TopicActivity.EXTRA_TOPIC_TITLE, topicTitle);
         startActivity(intent);
+    }
+
+    private void setupMiniPlayer() {
+        layoutMiniPlayer = findViewById(R.id.layout_mini_player);
+        ivMiniCover = findViewById(R.id.iv_mini_cover);
+        tvMiniTitle = findViewById(R.id.tv_mini_title);
+        tvMiniAuthor = findViewById(R.id.tv_mini_author);
+        btnMiniPlay = findViewById(R.id.btn_mini_play);
+        audioManager = AudioPlaybackManager.getInstance();
+        audioManager.initialize(this);
+        audioManager.getShouldShowMiniPlayer().observe(this, shouldShow -> {
+            if (shouldShow != null) layoutMiniPlayer.setVisibility(shouldShow ? CardView.VISIBLE : CardView.GONE);
+        });
+        audioManager.getCurrentTitle().observe(this, title -> { if (title != null) tvMiniTitle.setText(title); });
+        audioManager.getCurrentAuthor().observe(this, author -> { if (author != null) tvMiniAuthor.setText(author); });
+        audioManager.getCurrentCover().observe(this, coverUrl -> {
+            if (coverUrl != null && !coverUrl.isEmpty()) {
+                Glide.with(this).load(coverUrl).placeholder(R.drawable.ic_headphone_placeholder).into(ivMiniCover);
+            }
+        });
+        audioManager.getIsPlaying().observe(this, isPlaying -> {
+            if (isPlaying != null) btnMiniPlay.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play_arrow);
+        });
+        btnMiniPlay.setOnClickListener(v -> {
+            Boolean playing = audioManager.getIsPlaying().getValue();
+            if (playing != null && playing) audioManager.pause(); else audioManager.play();
+        });
+        layoutMiniPlayer.setOnClickListener(v -> {
+            String bookId = audioManager.getCurrentBookId().getValue();
+            if (bookId != null && !bookId.isEmpty()) {
+                Intent intent = new Intent(this, PlayerActivity.class);
+                intent.putExtra("book_id", bookId);
+                intent.putExtra("book_title", audioManager.getCurrentTitle().getValue());
+                intent.putExtra("book_author", audioManager.getCurrentAuthor().getValue());
+                intent.putExtra("book_cover", audioManager.getCurrentCover().getValue());
+                intent.putExtra("from_mini_player", true);
+                startActivity(intent);
+            }
+        });
     }
 }

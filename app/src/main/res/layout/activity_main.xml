@@ -53,22 +53,11 @@
                 android:text="Đăng nhập"
                 android:textSize="16sp"
                 android:textColor="#FFFFFF"
-                app:layout_constraintEnd_toStartOf="@id/iv_avatar"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:backgroundTint="@null"
                 android:layout_marginEnd="10dp" />
-
-            <!-- User logo -->
-            <ImageView
-                android:id="@+id/iv_avatar"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_headphone_placeholder"
-                android:contentDescription="Avatar bé"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -441,7 +430,5 @@
         android:elevation="6dp">
         <include layout="@layout/layout_mini_player" />
     </FrameLayout>
-
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
