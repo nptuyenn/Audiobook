@@ -28,30 +28,63 @@ export async function createStory(req, res) {
 }
 
 export async function createStoryFromSpeech(req, res) {
-  const { audioBase64, audioMime, title } = req.body;
+  const { audioBase64, audioMime } = req.body;
   if (!audioBase64) return res.status(400).json({ message: "audioBase64 is required" });
 
+  console.log('[STT] Received request to transcribe voice.');
+  console.log(`[STT] Request details - audioMime: ${audioMime}, audio length (base64): ${audioBase64.length}`);
+
   try {
+    console.log('[STT] Step 1: Decoding base64 audio...');
     const audioBuffer = Buffer.from(audioBase64, 'base64');
-    console.log('createStoryFromSpeech -> transcribing audio, mime:', audioMime);
+    console.log(`[STT] Step 1 SUCCESS. Audio buffer size: ${audioBuffer.length} bytes.`);
+    
+    console.log(`[STT] Step 2: Calling speech-to-text service...`);
     const transcript = await transcribeBuffer(audioBuffer, audioMime);
 
-    if (!transcript) return res.status(400).json({ message: 'No speech recognized' });
+    if (!transcript) {
+      console.warn('[STT] Step 2 FAILED. Transcription failed. No speech was recognized.');
+      return res.status(400).json({ message: 'No speech recognized' });
+    }
 
-    const text = await generateStory(transcript);
-    const outputAudio = await synthesizeToMp3(text);
-
-    const uploadRes = await uploadBuffer(outputAudio, { folder: 'ai-stories' });
-
-      return res.json({
-        transcript,
-        text,
-        audioUrl: uploadRes.secure_url,
-        audioMime: 'audio/mpeg'
-      });
+    console.log(`[STT] Step 2 SUCCESS. Transcription successful. Text: "${transcript}"`);
+    console.log('[STT] Process complete. Sending transcribed text back to client.');
+    
+    // Chỉ trả về văn bản đã được chuyển đổi
+    return res.json({ transcribedText: transcript });
 
   } catch (err) {
-    console.error('createStoryFromSpeech error:', err);
+    console.error('[STT] An error occurred in the transcription process:', err);
+    res.status(500).json({ message: err.message || 'Server error' });
+  }
+}
+
+export async function transcribeSpeech(req, res) {
+  const { audioBase64, audioMime } = req.body;
+  if (!audioBase64) return res.status(400).json({ message: "audioBase64 is required" });
+
+  console.log('[STT-Only] Received request for transcription.');
+  console.log(`[STT-Only] Request details - audioMime: ${audioMime}, audio length (base64): ${audioBase64.length}`);
+
+  try {
+    console.log('[STT-Only] Step 1: Decoding base64 audio...');
+    const audioBuffer = Buffer.from(audioBase64, 'base64');
+    console.log(`[STT-Only] Step 1 SUCCESS. Audio buffer size: ${audioBuffer.length} bytes.`);
+    
+    console.log(`[STT-Only] Step 2: Calling speech-to-text service...`);
+    const transcript = await transcribeBuffer(audioBuffer, audioMime);
+
+    if (!transcript) {
+      console.warn('[STT-Only] Step 2 FAILED. Transcription failed. No speech was recognized.');
+      return res.status(400).json({ message: 'No speech recognized' });
+    }
+
+    console.log(`[STT-Only] Step 2 SUCCESS. Transcription successful. Text: "${transcript}"`);
+    
+    return res.json({ transcribedText: transcript });
+
+  } catch (err) {
+    console.error('[STT-Only] An error occurred in transcribeSpeech process:', err);
     res.status(500).json({ message: err.message || 'Server error' });
   }
 }

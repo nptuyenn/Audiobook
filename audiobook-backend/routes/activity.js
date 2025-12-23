@@ -111,6 +111,28 @@ router.post("/review", protect, async (req, res, next) => {
   }
 });
 
+// POST /activity/start-listening
+router.post("/start-listening", protect, async (req, res, next) => {
+  try {
+    const { bookId } = req.body;
+    if (!bookId) {
+      return res.status(400).json({ message: "Thiếu bookId" });
+    }
+
+    await UserActivity.updateOne(
+      { userId: req.user.id, bookId },
+      // Chỉ cập nhật thời gian tương tác, không set isFinished
+      // upsert: true sẽ tạo mới record nếu chưa có
+      { $set: { updatedAt: new Date() } },
+      { upsert: true }
+    );
+
+    res.status(200).json({ message: "Đã ghi nhận trạng thái đã nghe" });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /activity/listened
 router.get("/listened", protect, async (req, res, next) => {
   try {
@@ -126,6 +148,36 @@ router.get("/listened", protect, async (req, res, next) => {
         title: activity.bookId.title,
         coverUrl: activity.bookId.coverUrl,
         author: activity.bookId.author
+      }));
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /activity/history - New endpoint for listening history
+router.get("/history", protect, async (req, res, next) => {
+  try {
+    const history = await UserActivity.find({
+      userId: req.user.id,
+      // Sách đã được bắt đầu nghe (có progressTime)
+      progressTime: { $gt: 0 } 
+    })
+    .sort({ updatedAt: -1 }) // Sắp xếp theo lần nghe gần nhất
+    .populate("bookId", "title coverUrl author");
+
+    const result = history
+      .filter(activity => activity.bookId) // Lọc những activity có sách (bookId không null)
+      .map(activity => ({
+        bookId: activity.bookId._id,
+        title: activity.bookId.title,
+        coverUrl: activity.bookId.coverUrl,
+        author: activity.bookId.author,
+        progressTime: activity.progressTime,
+        chapter: activity.chapter,
+        updatedAt: activity.updatedAt,
+        isFinished: activity.isFinished,
       }));
 
     res.json(result);
