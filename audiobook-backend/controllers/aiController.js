@@ -1,4 +1,5 @@
 import { generateStory } from "../services/geminiService.js";
+import { generateGroqChatCompletion } from "../services/groqService.js";
 import { synthesizeToMp3 } from "../services/ttsService.js";
 import { transcribeBuffer } from "../services/speechService.js";
 import { uploadBuffer } from "../services/cloudinaryService.js";
@@ -132,13 +133,11 @@ export async function chat(req, res) {
   if (!message) return res.status(400).json({ message: 'message is required' });
 
   try {
-    const systemPrompt = `Bạn là Gấu Nhỏ, trợ lý thân thiện của một ứng dụng Audiobook cho bé: trả lời ngắn gọn, dễ hiểu, an toàn, và khuyến khích khám phá.`;
-    const prompt = `${systemPrompt}\n\nLịch sử: ${JSON.stringify(history || [])}\n\nCâu hỏi: ${message}`;
-    const answer = await generateStory(prompt, systemPrompt); // reuse generateStory for simple chat
-
+    // Gọi đến service mới của Groq
+    const answer = await generateGroqChatCompletion(message, history); 
     res.json({ text: answer });
   } catch (err) {
-    console.error('chat error:', err);
-    res.status(500).json({ message: 'Chat failed' });
+    console.error('Groq chat error:', err);
+    res.status(500).json({ message: err.message || 'Chat failed' });
   }
 }
